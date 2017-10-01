@@ -9,26 +9,12 @@ def main() -> None:
     # Warning: takes a while
     #scrape_teams_write_tojson()
 
-    teams = []
-    for team in read_teams_from_json():
-        players = [Player(player["battle_tag"], player["skill_rating"])
-                   for player in team["players"]]
-        teams.append(
-            Team(
-                team["url"],
-                team["region"],
-                team["name"],
-                players,
-                team["average_sr"],
-                team["elo"]
-            )
-        )
-
+    teams = read_teams_from_json()
     for team in teams:
         print(team)
 
-    for match in TCS_Scraper.get_matches():
-        print(match)
+    # for match in TCS_Scraper.get_matches():
+    #     print(match)
 
 def scrape_teams_write_tojson() -> None:
     """
@@ -50,6 +36,22 @@ def read_teams_from_json() -> List[Team]:
     """
     with open("teams.json", "r") as file:
         data = json.load(file)
-    return data
+
+    teams = []
+    for team in data:
+        players = [Player(player["battle_tag"], player["skill_rating"])
+                   for player in team["players"]]
+        teams.append(
+            Team(
+                team["url"],
+                team["region"],
+                team["name"],
+                players,
+                team["average_sr"],
+                team["elo"]
+            )
+        )
+
+    return teams
 
 main()
