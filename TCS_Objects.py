@@ -41,7 +41,7 @@ class Team():
             "url" : self.url,
             "region" : self.region,
             "name" : self.name,
-            "players" : [player.__dict__ for player in self.players],
+            "players" : [player.__dict__() for player in self.players],
             "average_sr" : self.average_sr
         }
         return dict
@@ -60,7 +60,7 @@ class Team():
         team_list = []
         # Get the sr of all players on team
         for player in self.players:
-            sr = player.sr
+            sr = player.skill_rating
             team_list.append(sr)
 
         # If for some reason there are more than 6 players,
