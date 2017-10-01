@@ -7,7 +7,6 @@ class Overbuff_Scraper():
     def get_sr(battle_tag):
         user, id = battle_tag.split("#")
         url = "https://www.overbuff.com/players/pc/{0}-{1}".format(user, id)
-        print(url)
         r = requests.get(url, timeout=20, verify=False)
 
         raw_html = r.text

@@ -1,24 +1,12 @@
 from bs4 import BeautifulSoup
+import requests
+requests.packages.urllib3.disable_warnings()
 
 class TCS_Functions():
-    @staticmethod
-    def soup():
+    @classmethod
+    def soup(self):
         with open("teams_page.html", "rb") as teams_page:
             soup = BeautifulSoup(teams_page.read(), "html.parser")
-
-        """
-        regions_html = soup.find_all("div", class_="panel panel-default")
-
-        regions_teams = {}
-        for region_table in regions_html:
-            region_name = region_table.h1.contents[0].lower()
-            region_list = []
-            for row in region_table.tr:
-                team_link = row.find("a")
-                print(team_link)
-            # regions_teams[region_name] = region_list
-        
-        """
 
         tables = soup.find_all("table", {"class" : "table table-hover table-bordered"})
 
@@ -27,4 +15,21 @@ class TCS_Functions():
 
             for row in rows:
                 url = row.find("a")
-                print(url.get("href"))
+                url = url.get("href")
+                self.get_tag(url)
+
+    @classmethod
+    def get_tag(self, url):
+        r = requests.get(url, timeout=20, verify=False)
+
+        raw_html = r.text
+        soup = BeautifulSoup(raw_html, "html.parser")
+
+        table = soup.find("table")
+        rows = table.find_all("tr")[:-1]
+
+        for row in rows:
+            role = row.find("i")
+            if role.get("title") == "Player":
+                handle = row.find("td", {"class" : "text-break"})
+                print(handle.text)
