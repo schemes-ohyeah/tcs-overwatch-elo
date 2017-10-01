@@ -1,6 +1,3 @@
-from typing import List
-import json
-from TCS_Objects import Team, Player
 from TCS_Functions import TCS_Functions as TCS
 from TCS_Scraper import TCS_Scraper
 
@@ -9,12 +6,11 @@ def main() -> None:
     # Warning: takes a while
     #scrape_teams_write_tojson()
 
-    teams = read_teams_from_json()
+    teams = TCS.read_teams_from_json(reset_elo=True)
+    TCS.calculate_matches(teams)
+    TCS.write_teams_tojson(teams)
     for team in teams:
-        print(team)
-
-    # for match in TCS_Scraper.get_matches():
-    #     print(match)
+        print(teams[team])
 
 def scrape_teams_write_tojson() -> None:
     """
@@ -23,35 +19,9 @@ def scrape_teams_write_tojson() -> None:
 
     :return:
     """
-    # Create a list of Team objects by scraping TCS and Overbuff
-    teams = TCS.scrape_teams()
+    # Create a dictionary  of Team objects by scraping TCS and Overbuff
+    teams = TCS.get_teams()
     # Save this data to a json file named teams.json
     TCS.write_teams_tojson(teams)
-
-def read_teams_from_json() -> List[Team]:
-    """
-    Reads the json file and creates a list of Team objects
-
-    :return:
-    """
-    with open("teams.json", "r") as file:
-        data = json.load(file)
-
-    teams = []
-    for team in data:
-        players = [Player(player["battle_tag"], player["skill_rating"])
-                   for player in team["players"]]
-        teams.append(
-            Team(
-                team["url"],
-                team["region"],
-                team["name"],
-                players,
-                team["average_sr"],
-                team["elo"]
-            )
-        )
-
-    return teams
 
 main()
