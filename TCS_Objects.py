@@ -33,7 +33,8 @@ class Player():
 
 class Team():
     def __init__(self, url: str, region: str, name: str,
-                 players: List[Player]=None, average_sr: float=None):
+                 players: List[Player]=None, average_sr: float=None,
+                 elo: float=None):
         """
         If web scraping from TCS, playerlist will be None so we go to the
         individual team page and scrape from there.
@@ -47,11 +48,13 @@ class Team():
         :param players: list of Player objects
         :param average_sr:
         """
+        self.id = int(url.split("/")[-1])
         self.url = url
         self.region = region
         self.name = name
         self.players = players
         self.average_sr = average_sr
+        self.elo = elo
 
         if players is None:
             self.scrape_player_list()
@@ -66,6 +69,7 @@ class Team():
         return self.name + " <" + self.url + ">\n" \
                + "region: " + self.region + "\n" \
                + "average_sr: " + str(self.average_sr) + "\n" \
+               + "elo: " + str(self.elo) + "\n" \
                + "players: " + "\n" + players
 
     def __dict__(self):
@@ -74,7 +78,8 @@ class Team():
             "region" : self.region,
             "name" : self.name,
             "players" : [player.__dict__() for player in self.players],
-            "average_sr" : self.average_sr
+            "average_sr" : self.average_sr,
+            "elo" : self.elo
         }
         return dict
 
@@ -118,3 +123,50 @@ class Team():
             team_list = team_list[:6]
         team_sr = sum(team_list) / len(team_list)
         self.average_sr = team_sr
+        self.elo = team_sr
+
+    def update_elo(self, elo):
+        self.elo = elo
+
+    @staticmethod
+    def calculate_elo(my_elo: float, opponent_elo: float, result: int):
+        """
+        Elo update based on the math stuff I found here:
+        https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/
+
+
+        :param opponent_elo:
+        :param result: 1: win, 0: draw, -1: lose
+        :return: void
+        """
+        # Transformed rank
+        R_1 = pow(10, my_elo / 400)
+        R_2 = pow(10, opponent_elo / 400)
+
+        # Expected score
+        E_1 = R_1 / (R_1 + R_2)
+        E_2 = R_2 / (R_1 + R_2)
+
+        # If win
+        if result == 1:
+            S_1 = 1
+            S_2 = 0
+        # If draw
+        elif result == 0:
+            S_1 = S_2 = 0.5
+        # If lose
+        elif result == -1:
+            S_1 = 0
+            S_2 = 1
+        else:
+            print("Incorrect result inputted")
+            S_1 = S_2 = -1
+
+        # "Arbitrary" weight factor indicating how much
+        # a match should shift elo
+        K = 50
+
+        r_1prime = my_elo + K * (S_1 - E_1)
+        r_2prime = opponent_elo + K * (S_2 - E_2)
+
+        return r_1prime, r_2prime

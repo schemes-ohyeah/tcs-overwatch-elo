@@ -2,6 +2,7 @@ from typing import List
 import json
 from TCS_Objects import Team, Player
 from TCS_Functions import TCS_Functions as TCS
+from TCS_Scraper import TCS_Scraper
 
 def main() -> None:
     # Uncomment the following line to scrape
@@ -18,12 +19,16 @@ def main() -> None:
                 team["region"],
                 team["name"],
                 players,
-                team["average_sr"]
+                team["average_sr"],
+                team["elo"]
             )
         )
 
     for team in teams:
         print(team)
+
+    for match in TCS_Scraper.get_matches():
+        print(match)
 
 def scrape_teams_write_tojson() -> None:
     """

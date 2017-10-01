@@ -2,6 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 requests.packages.urllib3.disable_warnings()
 
+def get_soup(url, soupMethod="html.parser"):
+    r = requests.get(url, timeout=20, verify=False)
+    raw_html = r.text
+    return BeautifulSoup(raw_html, soupMethod)
+
 class TCS_Scraper():
     @staticmethod
     def get_teams():
@@ -10,13 +15,7 @@ class TCS_Scraper():
 
         :return: BeautifulSoup response
         """
-        url = "https://compete.tespa.org/tournament/75/phase/1"
-        r = requests.get(url, timeout=20, verify=False)
-
-        raw_html = r.text
-        soup = BeautifulSoup(raw_html, "html.parser")
-
-        return soup
+        return get_soup("https://compete.tespa.org/tournament/75/phase/1")
 
     @staticmethod
     def get_players(url):
@@ -28,11 +27,7 @@ class TCS_Scraper():
         :return: String list of battle tags
         """
         scraped_players = []
-        url = url
-        r = requests.get(url, timeout=20, verify=False)
-
-        raw_html = r.text
-        soup = BeautifulSoup(raw_html, "lxml")
+        soup = get_soup(url, "lxml")
 
         table = soup.find("table")
         rows = table.find_all("tr")[:-1]
@@ -44,3 +39,17 @@ class TCS_Scraper():
                     handle = row.find("td", {"class": "text-break"}).text
                     scraped_players.append(handle)
         return scraped_players
+
+    @staticmethod
+    def get_matches():
+        base_url = "https://compete.tespa.org/tournament/75/phase/1/group/"
+        matches = []
+        for x in range(1, 5):
+            url = base_url + str(x)
+            soup = get_soup(url)
+            links = soup.find_all("a")
+            for link in links:
+                match_url = link.get("href")
+                if "match" in match_url:
+                    matches.append(match_url)
+        return matches
