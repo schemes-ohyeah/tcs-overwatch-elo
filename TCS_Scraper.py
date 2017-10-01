@@ -1,32 +1,31 @@
 from bs4 import BeautifulSoup
-
-import urllib.request
+import requests
+requests.packages.urllib3.disable_warnings()
 
 def get_teams():
     url = "https://compete.tespa.org/tournament/75/phase/1"
-    page = urllib.request.urlopen(url)
+    r = requests.get(url, timeout=20, verify=False)
+
+    raw_html = r.text
+    soup = BeautifulSoup(raw_html, "html.parser")
+
     # "wb" because page.read() gives us bytes so we write bytes
-    with open("teams_page.html", "wb") as teams_page:
-        content = page.read()
-        teams_page.write(content)
+    with open("teams_page.html", "w") as teams_page:
+        teams_page.write(str(soup.prettify()))
 
-def soup():
-    with open("teams_page.html", "rb") as teams_page:
-        soup = BeautifulSoup(teams_page.read(), "html.parser")
+def get_sr(battle_tag):
+    user, id = battle_tag.split("#")
+    url = "https://www.overbuff.com/players/pc/{0}-{1}".format(user, id)
+    print(url)
+    r = requests.get(url, timeout=20, verify=False)
 
-    # Print page
-    # print("soup.prettify:", soup.prettify())
+    raw_html = r.text
+    soup = BeautifulSoup(raw_html, "html.parser")
 
-    # Print all tags
-    print("\nEach tag in soup")
-    for tag in soup:
-        print(tag)
+    sr = soup.find("span", {"class" : "color-stat-rating"})
 
-    # Print table
-    tableTag = soup.table
-    print("\ntableTag:", tableTag)
-    print("\ntableTag.name:", tableTag.name)
-    tableAttributes = tableTag.attrs
-    print("\ntableAttributes:", tableAttributes)
+    return sr.text
 
-soup()
+# def get_players():
+
+get_teams()
