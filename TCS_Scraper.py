@@ -11,8 +11,4 @@ class TCS_Scraper():
         raw_html = r.text
         soup = BeautifulSoup(raw_html, "html.parser")
 
-        # "wb" because page.read() gives us bytes so we write bytes
-        with open("teams_page.html", "w") as teams_page:
-            teams_page.write(str(soup.prettify()))
-
-TCS_Scraper.get_teams()
+        return soup
