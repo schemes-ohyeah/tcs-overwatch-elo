@@ -100,7 +100,7 @@ class TCS_Scraper(Scraper):
                 scores = matchup.find_all("div", {"class":"pull-right"})
                 test = 0
                 for score in scores:
-                    if score.text.strip() == "0":
+                    if score.text.strip() == "0" or score.text.strip() == "F":
                         test += 1
                 match_url = matchup.find("a").get("href")
                 if test != 2:
