@@ -7,6 +7,13 @@ from Overbuff_Scraper import Overbuff_Scraper as Overbuff
 
 class Player():
     def __init__(self, battle_tag: str, skill_rating: int=None):
+        """
+        If web scraping from TCS, sr will be None so we scrape from Overbuff.
+        Otherwise are are reading from a json file and scraping is unnecessary.
+
+        :param battle_tag:
+        :param skill_rating:
+        """
         self.battle_tag = battle_tag
         self.skill_rating = skill_rating \
             if skill_rating is not None \
@@ -27,6 +34,19 @@ class Player():
 class Team():
     def __init__(self, url: str, region: str, name: str,
                  players: List[Player]=None, average_sr: float=None):
+        """
+        If web scraping from TCS, playerlist will be None so we go to the
+        individual team page and scrape from there.
+        If that is the case, average_sr will also be none and will be calculated
+        from the player list.
+        Otherwise are are reading from a json file and scraping is unnecessary.
+
+        :param url:
+        :param region: west, south, north, east
+        :param name: team name
+        :param players: list of Player objects
+        :param average_sr:
+        """
         self.url = url
         self.region = region
         self.name = name
@@ -35,8 +55,8 @@ class Team():
 
         if players is None:
             self.scrape_player_list()
-        #if average_sr is None:
-        self.calculate_average()
+        if average_sr is None:
+            self.calculate_average()
 
     def __str__(self):
         players = ""
@@ -59,6 +79,12 @@ class Team():
         return dict
 
     def scrape_player_list(self):
+        """
+        Takes the team url and looks up the battle tags, ignoring team
+        coordinators and substitutes
+
+        :return: void
+        """
         scraped_players = TCS_Scraper.get_players(self.url)
 
         player_list = []
@@ -67,17 +93,26 @@ class Team():
         self.players = player_list
 
     def calculate_average(self):
+        """
+        Takes list of players and averages their SR, ignoring unranked people.
+        If there are more than 6 players, only take the top 6.
+
+        :return:
+        """
         team_list = []
         # Get the sr of all players on team
         for player in self.players:
             sr = player.skill_rating
             if sr > 0:
                 team_list.append(sr)
+            # Unranked people are listed as -1 SR, do not consider in average
+
+        # If entire team is unranked
         if not team_list:
             return -1
 
         # If for some reason there are more than 6 players,
-        # only use the top 6 ranked players in the average
+        # only use the top 6 ranked players, assume rest are substitutes
         if len(team_list) > 6:
             team_list.sort(reverse=True)
             team_list = team_list[:6]

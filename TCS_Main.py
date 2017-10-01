@@ -26,12 +26,23 @@ def main() -> None:
         print(team)
 
 def scrape_teams_write_tojson() -> None:
+    """
+    Running this will take half an hour as it scrapes all SR from Overbuff.
+    Only run this to update the json file from a web scrape
+
+    :return:
+    """
     # Create a list of Team objects by scraping TCS and Overbuff
     teams = TCS.scrape_teams()
     # Save this data to a json file named teams.json
     TCS.write_teams_tojson(teams)
 
 def read_teams_from_json() -> List[Team]:
+    """
+    Reads the json file and creates a list of Team objects
+
+    :return:
+    """
     with open("teams.json", "r") as file:
         data = json.load(file)
     return data

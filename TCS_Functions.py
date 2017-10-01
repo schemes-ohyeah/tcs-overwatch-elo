@@ -7,6 +7,12 @@ from TCS_Scraper import TCS_Scraper
 class TCS_Functions():
     @staticmethod
     def scrape_teams() -> List[Team]:
+        """
+        Using BeautifulSoup scrape data, create Team objects
+        (refer to TCS_Objects.py)
+
+        :return: list of Team objects with default None players and sr
+        """
         # Get teams
         soup = TCS_Scraper.get_teams()
 
@@ -49,6 +55,12 @@ class TCS_Functions():
 
     @staticmethod
     def write_teams_tojson(teams: List[Team]) -> None:
+        """
+        Takes a list of team objects and writes them to a json file
+
+        :param teams: list of Team objects
+        :return: void write out to filename teams.json
+        """
         with open("teams.json", "w") as out:
             out.write(
                 json.dumps(

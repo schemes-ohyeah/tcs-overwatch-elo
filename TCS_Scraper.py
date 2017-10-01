@@ -5,6 +5,11 @@ requests.packages.urllib3.disable_warnings()
 class TCS_Scraper():
     @staticmethod
     def get_teams():
+        """
+        Gets HTML from the following url listing all teams
+
+        :return: BeautifulSoup response
+        """
         url = "https://compete.tespa.org/tournament/75/phase/1"
         r = requests.get(url, timeout=20, verify=False)
 
@@ -15,6 +20,13 @@ class TCS_Scraper():
 
     @staticmethod
     def get_players(url):
+        """
+        Takes a team url and gets all battle tags
+        excluding team coordinator and substitutes
+
+        :param url: team url
+        :return: String list of battle tags
+        """
         scraped_players = []
         url = url
         r = requests.get(url, timeout=20, verify=False)
