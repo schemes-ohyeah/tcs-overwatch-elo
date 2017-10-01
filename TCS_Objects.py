@@ -1,12 +1,16 @@
-from Overbuff_Scraper import Overbuff_Scraper as Overbuff
+from typing import List
 from bs4 import BeautifulSoup
 import requests
 requests.packages.urllib3.disable_warnings()
 
+from Overbuff_Scraper import Overbuff_Scraper as Overbuff
+
 class Player():
-    def __init__(self, battle_tag: str):
+    def __init__(self, battle_tag: str, skill_rating: int=None):
         self.battle_tag = battle_tag
-        self.skill_rating = Overbuff.get_sr(battle_tag)
+        self.skill_rating = skill_rating \
+            if skill_rating is not None \
+            else Overbuff.get_sr(battle_tag)
 
     def __str__(self):
         return self.battle_tag + " (" + self.skill_rating + " SR)"
@@ -19,15 +23,18 @@ class Player():
         return dict
 
 class Team():
-    def __init__(self, url: str, region: str, name: str):
+    def __init__(self, url: str, region: str, name: str,
+                 players: List[Player]=None, average_sr: float=None):
         self.url = url
         self.region = region
         self.name = name
-        self.players = [],
-        self.average_sr = 0
+        self.players = players
+        self.average_sr = average_sr
 
-        self.scrape_player_list()
-        self.calculate_average()
+        if players is None:
+            self.scrape_player_list()
+        if average_sr is None:
+            self.calculate_average()
 
     def __str__(self):
         players = ""

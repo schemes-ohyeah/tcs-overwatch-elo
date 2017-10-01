@@ -1,10 +1,12 @@
+import json
 from bs4 import BeautifulSoup
+from typing import List
 from TCS_Objects import Team
 from TCS_Scraper import TCS_Scraper
 
 class TCS_Functions():
     @staticmethod
-    def scrape_teams():
+    def scrape_teams() -> List[Team]:
         # Get teams
         soup = TCS_Scraper.get_teams()
 
@@ -44,3 +46,12 @@ class TCS_Functions():
                 )
 
         return teams
+
+    @staticmethod
+    def write_teams_tojson(teams: List[Team]) -> None:
+        with open("teams.json", "w") as out:
+            out.write(
+                json.dumps(
+                    [team.__dict__() for team in teams]
+                )
+            )
