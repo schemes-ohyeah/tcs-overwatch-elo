@@ -1,6 +1,5 @@
 import json
-from bs4 import BeautifulSoup
-from typing import List, Dict
+from typing import Dict
 from TCS_Objects import Team, Player
 from TCS_Scraper import TCS_Scraper
 
@@ -58,31 +57,26 @@ class TCS_Functions():
         return team_dict
 
     @staticmethod
-    def calculate_matches(teams) -> None:
+    def calculate_matches(teams: Dict[int, Team]) -> None:
+        """
+        Goes through all matches and calculates new elo for teams with each
+        map causing a new elo shift, rather than an overall bo3 / bo5
+
+        :param teams:
+        :return:
+        """
         matches = TCS_Scraper.scrape_matches()
         for match in matches:
             print("Scraping", match)
-            team_1url, t1_score, t1_lose, team_2url \
-                = TCS_Scraper.scrape_match(match)
-            if t1_score + t1_lose == 0:
+            team_1id, results, team_2id \
+                = TCS_Scraper.scrape_match(match, teams)
+            if not results:
                 continue
-            team_1id = int(team_1url.split("/")[-1])
-            team_2id = int(team_2url.split("/")[-1])
             team_1 = teams[team_1id]
             team_2 = teams[team_2id]
 
-            # Do team 1 wins (team 2 loss)
-            for x in range(t1_score):
-                # Elo 1 prime, elo 2 prime
-                e1p, e2p = Team.calculate_elo(team_1.elo, team_2.elo, 1)
-                print(team_1.name, str(e1p - team_1.elo))
-                print(team_2.name, str(e2p - team_2.elo))
-                team_1.elo = e1p
-                team_2.elo = e2p
-
-            # Do team 1 loss (team 2 win)
-            for x in range(t1_lose):
-                e1p, e2p = Team.calculate_elo(team_1.elo, team_2.elo, 0)
+            for result in results:
+                e1p, e2p = Team.calculate_elo(team_1.elo, team_2.elo, result)
                 print(team_1.name, str(e1p - team_1.elo))
                 print(team_2.name, str(e2p - team_2.elo))
                 team_1.elo = e1p

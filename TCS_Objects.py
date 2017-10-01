@@ -1,8 +1,5 @@
 from TCS_Scraper import TCS_Scraper
 from typing import List
-import requests
-requests.packages.urllib3.disable_warnings()
-
 from Overbuff_Scraper import Overbuff_Scraper as Overbuff
 
 class Player():
