@@ -1,12 +1,12 @@
 from bs4 import BeautifulSoup
-from TCS_Objects import *
+from TCS_Objects import Team
+from TCS_Scraper import TCS_Scraper
 
 class TCS_Functions():
     @staticmethod
     def scrape_teams():
-        # Read HTML
-        with open("teams_page.html", "rb") as teams_page:
-            soup = BeautifulSoup(teams_page.read(), "html.parser")
+        # Get teams
+        soup = TCS_Scraper.get_teams()
 
         # Get each region table
         regions = soup.find_all("table", {"class" : "table table-hover table-bordered"})

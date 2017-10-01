@@ -24,7 +24,7 @@ class Team():
         for player in self.players:
             players += "\t" + str(player) + "\n"
 
-        return self.name + "<" + self.url + ">\n" \
+        return self.name + " <" + self.url + ">\n" \
                + "region: " + self.region + "\n" \
                + "average_sr: " + str(self.average_sr) + "\n" \
                + "players: " + "\n" + players
@@ -41,9 +41,13 @@ class Team():
 
     def calculate_average(self):
         team_list = []
+        # Get the sr of all players on team
         for player in self.players:
             sr = player.sr
             team_list.append(sr)
+
+        # If for some reason there are more than 6 players,
+        # only use the top 6 ranked players in the average
         team_list.sort(reverse=True)
         team_list = team_list[:6]
         team_sr = sum(team_list) / 6
