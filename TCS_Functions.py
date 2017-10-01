@@ -44,19 +44,3 @@ class TCS_Functions():
                 )
 
         return teams
-
-    @classmethod
-    def get_tag(self, url):
-        r = requests.get(url, timeout=20, verify=False)
-
-        raw_html = r.text
-        soup = BeautifulSoup(raw_html, "html.parser")
-
-        table = soup.find("table")
-        rows = table.find_all("tr")[:-1]
-
-        for row in rows:
-            role = row.find("i")
-            if role.get("title") == "Player":
-                handle = row.find("td", {"class" : "text-break"})
-                print(handle.text)
