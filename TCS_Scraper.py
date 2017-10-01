@@ -1,14 +1,7 @@
 from typing import List
-from bs4 import BeautifulSoup
-import requests
-requests.packages.urllib3.disable_warnings()
+from Scraper import Scraper
 
-def get_soup(url, soupMethod="html.parser"):
-    r = requests.get(url, timeout=20, verify=False)
-    raw_html = r.text
-    return BeautifulSoup(raw_html, soupMethod)
-
-class TCS_Scraper():
+class TCS_Scraper(Scraper):
     @staticmethod
     def scrape_teams():
         """
@@ -16,7 +9,7 @@ class TCS_Scraper():
 
         :return: BeautifulSoup response
         """
-        return get_soup("https://compete.tespa.org/tournament/75/phase/1")
+        return super().get_soup("https://compete.tespa.org/tournament/75/phase/1")
 
     @staticmethod
     def scrape_players(url) ->List[str]:
@@ -28,7 +21,7 @@ class TCS_Scraper():
         :return: String list of battle tags
         """
         scraped_players = []
-        soup = get_soup(url, "lxml")
+        soup = super().get_soup(url, "lxml")
 
         table = soup.find("table")
         rows = table.find_all("tr")[:-1]
@@ -48,7 +41,7 @@ class TCS_Scraper():
         :param url:
         :return:
         """
-        soup = get_soup(url)
+        soup = super().get_soup(url)
         team_1 = soup.find("div", {"id" : "player1Container"}).find("a")
         team_1 = team_1.get("href") if team_1 else None
         team_2 = soup.find("div", {"id" : "player2Container"}).find("a")
@@ -79,7 +72,7 @@ class TCS_Scraper():
         matches = []
         for x in range(1, 5):
             url = base_url + str(x)
-            soup = get_soup(url)
+            soup = super().get_soup(url)
             links = soup.find_all("a")
             for link in links:
                 match_url = link.get("href")

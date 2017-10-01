@@ -1,8 +1,6 @@
-from bs4 import BeautifulSoup
-import requests
-requests.packages.urllib3.disable_warnings()
+from Scraper import Scraper
 
-class Overbuff_Scraper():
+class Overbuff_Scraper(Scraper):
     @staticmethod
     def get_sr(battle_tag):
         """
@@ -13,10 +11,7 @@ class Overbuff_Scraper():
         """
         user, id = battle_tag.split("#")
         url = "https://www.overbuff.com/players/pc/{0}-{1}".format(user, id)
-        r = requests.get(url, timeout=20, verify=False)
-
-        raw_html = r.text
-        soup = BeautifulSoup(raw_html, "html.parser")
+        soup = super().get_soup(url)
 
         sr = soup.find("span", {"class": "color-stat-rating"})
 
