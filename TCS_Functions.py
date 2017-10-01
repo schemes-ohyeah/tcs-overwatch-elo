@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from TCS_Objects import *
 
 class TCS_Functions():
     @staticmethod
