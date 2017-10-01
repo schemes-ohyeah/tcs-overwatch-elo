@@ -14,4 +14,7 @@ class Overbuff_Scraper():
 
         sr = soup.find("span", {"class": "color-stat-rating"})
 
-        return int(sr.text)
+        if sr:
+            return int(sr.text)
+        else:
+            return -1

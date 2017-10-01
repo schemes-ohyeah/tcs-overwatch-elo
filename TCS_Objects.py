@@ -1,4 +1,5 @@
 from Overbuff_Scraper import Overbuff_Scraper as Overbuff
+from TCS_Scraper import TCS_Scraper
 from bs4 import BeautifulSoup
 import requests
 requests.packages.urllib3.disable_warnings()
@@ -51,23 +52,8 @@ class Team():
 
     def scrape_player_list(self):
         # TODO Sean will fill something here
-        scraped_players = []
+        scraped_players = TCS_Scraper.get_players(self.url)
         # Sean just do the thing above here so it's a list of battle tags
-
-        url = self.url
-        r = requests.get(url, timeout=20, verify=False)
-
-        raw_html = r.text
-        soup = BeautifulSoup(raw_html, "html.parser")
-
-        table = soup.find("table")
-        rows = table.find_all("tr")[:-1]
-
-        for row in rows:
-            role = row.find("i")
-            if role.get("title") == "Player":
-                handle = row.find("td", {"class": "text-break"}).text
-                scraped_players.append(handle)
 
         player_list = []
         for battle_tag in scraped_players:
