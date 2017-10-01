@@ -3,10 +3,17 @@ from Overbuff_Scraper import Overbuff_Scraper as Overbuff
 class Player():
     def __init__(self, battle_tag: str):
         self.battle_tag = battle_tag
-        self.sr = Overbuff.get_sr(battle_tag)
+        self.skill_rating = Overbuff.get_sr(battle_tag)
 
     def __str__(self):
-        return self.battle_tag + " (" + self.sr + " SR)"
+        return self.battle_tag + " (" + self.skill_rating + " SR)"
+
+    def __dict__(self):
+        dict = {
+            "battle_tag" : self.battle_tag,
+            "skill_rating" : self.skill_rating
+        }
+        return dict
 
 class Team():
     def __init__(self, url: str, region: str, name: str):
@@ -28,6 +35,16 @@ class Team():
                + "region: " + self.region + "\n" \
                + "average_sr: " + str(self.average_sr) + "\n" \
                + "players: " + "\n" + players
+
+    def __dict__(self):
+        dict = {
+            "url" : self.url,
+            "region" : self.region,
+            "name" : self.name,
+            "players" : [player.__dict__ for player in self.players],
+            "average_sr" : self.average_sr
+        }
+        return dict
 
     def scrape_player_list(self):
         # TODO Sean will fill something here
