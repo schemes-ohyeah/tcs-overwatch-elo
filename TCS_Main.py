@@ -4,6 +4,10 @@ from TCS_Objects import Team, Player
 from TCS_Functions import TCS_Functions as TCS
 
 def main() -> None:
+    # Uncomment the following line to scrape
+    # Warning: takes a while
+    #scrape_teams_write_tojson()
+
     teams = []
     for team in read_teams_from_json():
         players = [Player(player["battle_tag"], player["skill_rating"])

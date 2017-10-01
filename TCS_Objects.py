@@ -13,7 +13,9 @@ class Player():
             else Overbuff.get_sr(battle_tag)
 
     def __str__(self):
-        return self.battle_tag + " (" + self.skill_rating + " SR)"
+        if self.skill_rating > 0:
+            return self.battle_tag + " (" + str(self.skill_rating) + " SR)"
+        return self.battle_tag + " (Unranked)"
 
     def __dict__(self):
         dict = {
@@ -33,8 +35,8 @@ class Team():
 
         if players is None:
             self.scrape_player_list()
-        if average_sr is None:
-            self.calculate_average()
+        #if average_sr is None:
+        self.calculate_average()
 
     def __str__(self):
         players = ""
@@ -71,11 +73,15 @@ class Team():
         # Get the sr of all players on team
         for player in self.players:
             sr = player.skill_rating
-            team_list.append(sr)
+            if sr > 0:
+                team_list.append(sr)
+        if not team_list:
+            return -1
 
         # If for some reason there are more than 6 players,
         # only use the top 6 ranked players in the average
-        team_list.sort(reverse=True)
-        team_list = team_list[:6]
-        team_sr = sum(team_list) / 6
+        if len(team_list) > 6:
+            team_list.sort(reverse=True)
+            team_list = team_list[:6]
+        team_sr = sum(team_list) / len(team_list)
         self.average_sr = team_sr
