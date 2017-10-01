@@ -1,19 +1,8 @@
-r_1 = 4100
-r_2 = 4000
+from TCS_Objects import Team
 
-R_1 = pow(10, r_1 / 400)
-R_2 = pow(10, r_2 / 400)
-
-E_1 = R_1 / (R_1 + R_2)
-E_2 = R_2 / (R_1 + R_2)
-
-S_1 = 0
-S_2 = 1
-
-K = 50
-
-r_1prime = r_1 + K * (S_1 - E_1)
-r_2prime = r_2 + K * (S_2 - E_2)
-
-print(r_1prime)
-print(r_2prime)
+a, b = Team.calculate_elo(4006.8333333333, 3987.3333333333, -1)
+print(a, b)
+c, d = Team.calculate_elo(a, b, 1)
+print(c, d)
+e, f = Team.calculate_elo(c, d, -1)
+print(e, f)

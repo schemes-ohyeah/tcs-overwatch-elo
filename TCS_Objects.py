@@ -90,7 +90,7 @@ class Team():
 
         :return: void
         """
-        scraped_players = TCS_Scraper.get_players(self.url)
+        scraped_players = TCS_Scraper.scrape_players(self.url)
 
         player_list = []
         for battle_tag in scraped_players:
@@ -124,9 +124,6 @@ class Team():
         team_sr = sum(team_list) / len(team_list)
         self.average_sr = team_sr
         self.elo = team_sr
-
-    def update_elo(self, elo):
-        self.elo = elo
 
     @staticmethod
     def calculate_elo(my_elo: float, opponent_elo: float, result: int):
