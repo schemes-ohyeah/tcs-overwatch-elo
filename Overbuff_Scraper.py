@@ -11,7 +11,7 @@ class Overbuff_Scraper(Scraper):
         """
         user, id = battle_tag.split("#")
         url = "https://www.overbuff.com/players/pc/{0}-{1}".format(user, id)
-        soup = super().get_soup(url)
+        soup = Scraper.get_soup(url)
 
         sr = soup.find("span", {"class": "color-stat-rating"})
 

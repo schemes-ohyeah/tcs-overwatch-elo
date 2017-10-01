@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from Scraper import Scraper
 
 class TCS_Scraper(Scraper):
@@ -9,7 +9,7 @@ class TCS_Scraper(Scraper):
 
         :return: BeautifulSoup response
         """
-        return super().get_soup("https://compete.tespa.org/tournament/75/phase/1")
+        return Scraper.get_soup("https://compete.tespa.org/tournament/75/phase/1")
 
     @staticmethod
     def scrape_players(url) ->List[str]:
@@ -21,7 +21,7 @@ class TCS_Scraper(Scraper):
         :return: String list of battle tags
         """
         scraped_players = []
-        soup = super().get_soup(url, "lxml")
+        soup = Scraper.get_soup(url, "lxml")
 
         table = soup.find("table")
         rows = table.find_all("tr")[:-1]
@@ -35,31 +35,53 @@ class TCS_Scraper(Scraper):
         return scraped_players
 
     @staticmethod
-    def scrape_match(url):
+    def scrape_match(url, teams) -> (int, List[int], int):
         """
-        Returns the team urls and the number of won / loss
+        Returns the team ids and list of results relative to team 1 where
+        results is a list of ints
+        [1] -> win
+        [0] -> draw
+        [-1] -> loss
+
         :param url:
-        :return:
+        :return: team_1id, results,  team_2id
         """
-        soup = super().get_soup(url)
-        team_1 = soup.find("div", {"id" : "player1Container"}).find("a")
-        team_1 = team_1.get("href") if team_1 else None
-        team_2 = soup.find("div", {"id" : "player2Container"}).find("a")
-        team_2 = team_2.get("href") if team_2 else None
+        soup = Scraper.get_soup(url)
+        team_1url = soup.find("div", {"id" : "player1Container"}).find("a")
+        team_1url = team_1url.get("href") if team_1url else None
+        team_2url = soup.find("div", {"id" : "player2Container"}).find("a")
+        team_2url = team_2url.get("href") if team_2url else None
 
-        if team_1 and team_2:
-            t1_score = soup.find("input", {"id" : "team1_score"})
-            t1_score = int(t1_score.get("value")) if t1_score.get("value") else 0
-            t2_score = soup.find("input", {"id" : "team2_score"})
-            t2_score = int(t2_score.get("value")) if t2_score.get("value") else 0
+        results = []
+        if team_1url and team_2url:
+            # Get the team id and find the team object from the dict of teams
+            team_1id = int(team_1url.split("/")[-1])
+            team_2id = int(team_2url.split("/")[-1])
+            team_1 = teams[team_1id]
+            team_2 = teams[team_2id]
+
+            # Table is a list of maps and their results in order
+            result_table = soup.find("table", {"class" : "table panel-body table-bordered"})
+            if result_table:
+                for row in result_table.find_all("tr"):
+                    cols = row.find_all("td")
+                    if not cols:
+                        continue
+                    map = cols[1].text.strip()
+                    winner = cols[2].text.strip()
+                    if winner == team_1.name:
+                        results.append(1)
+                        print(team_1.name + " wins " + map + " against " + team_2.name)
+                    elif winner == team_2.name:
+                        results.append(-1)
+                        print(team_2.name + " wins " + map + " against " + team_1.name)
+                    else:
+                        results.append(0)
+                        print(team_1.name + " draws " + team_2.name + " on " + map)
         else:
-            t1_score = t2_score = 0
+            team_1id = team_2id = None
 
-        total_games = t1_score + t2_score
-
-        t1_lose = total_games - t1_score
-
-        return team_1, t1_score, t1_lose, team_2
+        return team_1id, results, team_2id
 
     @staticmethod
     def scrape_matches() -> List[str]:
@@ -72,7 +94,7 @@ class TCS_Scraper(Scraper):
         matches = []
         for x in range(1, 5):
             url = base_url + str(x)
-            soup = super().get_soup(url)
+            soup = Scraper.get_soup(url)
             links = soup.find_all("a")
             for link in links:
                 match_url = link.get("href")
