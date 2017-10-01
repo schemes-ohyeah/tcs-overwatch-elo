@@ -95,10 +95,15 @@ class TCS_Scraper(Scraper):
         for x in range(1, 5):
             url = base_url + str(x)
             soup = Scraper.get_soup(url)
-            links = soup.find_all("a")
-            for link in links:
-                match_url = link.get("href")
-                if "match" in match_url:
+            matchups = soup.find_all("div", {"data-toggle":"tooltip"})
+            for matchup in matchups:
+                scores = matchup.find_all("div", {"class":"pull-right"})
+                test = 0
+                for score in scores:
+                    if score.text.strip() == "0":
+                        test += 1
+                match_url = matchup.find("a").get("href")
+                if test != 2:
                     matches.append(match_url)
 
         # URLs are duplicated for each cell due to how the UI is laid out
