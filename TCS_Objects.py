@@ -57,9 +57,7 @@ class Team():
         return dict
 
     def scrape_player_list(self):
-        # TODO Sean will fill something here
         scraped_players = TCS_Scraper.get_players(self.url)
-        # Sean just do the thing above here so it's a list of battle tags
 
         player_list = []
         for battle_tag in scraped_players:
