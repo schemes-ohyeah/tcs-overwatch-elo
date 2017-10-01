@@ -3,29 +3,44 @@ from TCS_Objects import *
 
 class TCS_Functions():
     @staticmethod
-    def soup():
+    def scrape_teams():
+        # Read HTML
         with open("teams_page.html", "rb") as teams_page:
             soup = BeautifulSoup(teams_page.read(), "html.parser")
 
-        """
-        regions_html = soup.find_all("div", class_="panel panel-default")
+        # Get each region table
+        regions = soup.find_all("table", {"class" : "table table-hover table-bordered"})
 
-        regions_teams = {}
-        for region_table in regions_html:
-            region_name = region_table.h1.contents[0].lower()
+        regions_teams = []
+
+        for region in regions:
+            rows = region.find_all("tr")[1:]
             region_list = []
-            for row in region_table.tr:
-                team_link = row.find("a")
-                print(team_link)
-            # regions_teams[region_name] = region_list
-        
-        """
 
-        tables = soup.find_all("table", {"class" : "table table-hover table-bordered"})
-
-        for table in tables:
-            rows = table.find_all("tr")[1:]
-
+            # find the url and team name for each team in this region
             for row in rows:
-                url = row.find("a")
-                print(url.get("href"))
+                tag = row.find("a")
+                name = tag.text.strip()
+                url = tag.get("href")
+                region_list.append([name, url])
+
+            # append this region's list of names and url
+            regions_teams.append(region_list)
+
+        NAME = 0
+        URL = 1
+        teams = []
+
+        # Using this list, create Team objects
+        REGION_NAMES = ["west", "south", "north", "east"]
+        for x in range(len(REGION_NAMES)):
+            for team in regions_teams[x]:
+                teams.append(
+                    Team(
+                        team[URL],
+                        REGION_NAMES[x],
+                        team[NAME],
+                    )
+                )
+
+        return teams

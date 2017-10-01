@@ -1,4 +1,5 @@
 from TCS_Functions import TCS_Functions as TCS
-from TCS_Objects import *
 
-TCS.soup()
+teams = TCS.scrape_teams()
+for team in teams:
+    print(team)
