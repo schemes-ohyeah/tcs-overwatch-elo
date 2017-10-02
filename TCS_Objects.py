@@ -52,6 +52,7 @@ class Team():
         self.players = players
         self.average_sr = average_sr
         self.elo = elo
+        self.matches = matches
 
         if players is None:
             self.scrape_player_list()

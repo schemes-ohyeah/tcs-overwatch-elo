@@ -42,10 +42,32 @@ def search():
 
 @app.route("/team/<id>")
 def team(id):
-    teams = TCS.read_teams_from_json(reset_elo=False)
+    teams = TCS.read_teams_from_json(reset=False)
+    matches = TCS.read_matches_from_json()
     team = teams[int(id)]
-    return render_template("team.html", team=team)
+    matches = [matches[match_id] for match_id in team.matches]
+    my_matches = []
+    opponent = None
+    for match in matches:
+        data = {}
+        if match.team_1id == team.id:
+            data["results"] = match.results
+            data["elos"] = match.team_1elos
+            opponent = teams[match.team_2id].name
+        elif match.team_2id == team.id:
+            # Matches store win result relative to team 1. Flip if this is team 2
+            data["results"] = [[-result[0], result[1]] for result in match.results]
+            data["elos"] = match.team_2elos
+            opponent = teams[match.team_1id].name
+        else:
+            print("something is wrong with team match finding")
+        data["url"] = match.url
+        my_matches.append(data)
 
+    return render_template("team.html",
+                           team=team,
+                           matches=my_matches,
+                           opponent=opponent)
 
 if __name__ == "__main__":
     app.run()

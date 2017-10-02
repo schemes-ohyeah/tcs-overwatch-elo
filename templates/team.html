@@ -4,6 +4,8 @@
     <div class="container">
         <h1>{{ team.name }} ({{ team.region|capitalize }})</h1>
         <a href="{{ team.url }}">{{ team.url }}</a>
+
+        <!-- Table of players -->
         <table class="table">
             <thead>
             <tr>
@@ -22,6 +24,44 @@
                 <th>Average</th>
                 <td>{{ team.average_sr|round(2) }}</td>
             </tr>
+            </tbody>
+        </table>
+
+        <!-- Table of matches -->
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Match</th>
+                <th>Opponent</th>
+                <th>Map</th>
+                <th>Result</th>
+                <th>New Elo</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for match in matches %}
+                {% set outer_loop = loop %}
+                {% for result in match.results %}
+                    <tr>
+                        <td>{{ outer_loop.index }}</td>
+                        <td>{{ opponent }}</td>
+                        <td>{{ result[1] }}</td>
+                        {% if result[0] == 1 %}
+                            <td>Win</td>
+                        {% elif result[0] == 0 %}
+                            <td>Draw</td>
+                        {% elif result[0] == -1 %}
+                            <td>Lose</td>
+                        {% else %}
+                            <td>broke code tbh</td>
+                        {% endif %}
+
+                        {# TODO Currently skipping index 0 which is the starting elo #}
+                        {# Maybe find a way to indicate this in the UI? #}
+                        <td>{{ match.elos[loop.index]|round(2) }}</td>
+                    </tr>
+                {% endfor %}
+            {% endfor %}
             </tbody>
         </table>
     </div>
