@@ -65,7 +65,7 @@ class TCS_Functions():
         :param teams:
         :return:
         """
-        matches = TCS_Scraper.scrape_matches()
+        matches = TCS_Scraper.scrape_matches(round=1)
         for match in matches:
             print("Scraping", match)
             team_1id, results, team_2id \

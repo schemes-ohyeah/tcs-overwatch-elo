@@ -85,7 +85,7 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_matches() -> List[str]:
+    def scrape_matches(round: int) -> List[str]:
         """
         Gets a list of all matches by visiting each region's individual page
 
@@ -93,19 +93,28 @@ class TCS_Scraper(Scraper):
         """
         base_url = "https://compete.tespa.org/tournament/75/phase/1/group/"
         matches = []
+        # for each group (region)
         for x in range(1, 5):
             url = base_url + str(x)
             soup = Scraper.get_soup(url)
-            matchups = soup.find_all("div", {"data-toggle":"tooltip"})
-            for matchup in matchups:
-                scores = matchup.find_all("div", {"class":"pull-right"})
-                test = 0
-                for score in scores:
-                    if score.text.strip() == "0" or score.text.strip() == "F":
-                        test += 1
-                match_url = matchup.find("a").get("href")
-                if test != 2:
-                    matches.append(match_url)
+
+            # for each round up to the specific round in parameter, inclusive
+            for x in range(1, round + 1):
+                round_soup = soup.find("div", {"id" : "collapseRound" + str(x)})
+                matchups = round_soup.find_all("table",
+                                               {"class" : "table margin-top margin-bottom panel"})
+                # for each matchup in this round
+                for matchup in matchups:
+                    # Check that something has happened in this matchup
+                    # eg no forfeit or empty score
+                    scores = matchup.find_all("div", {"class" : "pull-right"})
+                    score1 = scores[0].text.strip()
+                    score1 = int(score1) if score1.isdigit() else 0
+                    score2 = scores[1].text.strip()
+                    score2 = int(score2) if score2.isdigit() else 0
+                    if score1 + score2 > 0:
+                        match_url = matchup.find("a").get("href")
+                        matches.append(match_url)
 
         # URLs are duplicated for each cell due to how the UI is laid out
-        return matches[::2]
+        return matches
