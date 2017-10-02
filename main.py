@@ -7,10 +7,16 @@ app = Flask(__name__)
 def index():
     return render_template("index.html")
 
+@app.route("/matches")
+def matches():
+    matches = TCS.read_matches_from_json()
+    matches = [matches[key] for key in matches]
+    return jsonify([match.__dict__() for match in matches])
+
 @app.route("/rankings/<region>")
 @app.route("/rankings")
 def rankings(region=None):
-    teams = TCS.read_teams_from_json(reset_elo=False)
+    teams = TCS.read_teams_from_json(reset=False)
     teams = [teams[key] for key in teams]
     if region:
         teams = [team for team in teams if team.region == region]
@@ -28,17 +34,18 @@ def rankings(region=None):
                            region=region,
                            json_link=json_link)
 
+@app.route("/search")
+def search():
+    query = request.args.get("query")
+    return "Your query for \"" + query + "\" returned 0 results, mostly beacuse " \
+                                       "the search algorithm hasn't been implemented yet."
+
 @app.route("/team/<id>")
 def team(id):
     teams = TCS.read_teams_from_json(reset_elo=False)
     team = teams[int(id)]
     return render_template("team.html", team=team)
 
-@app.route("/search")
-def search():
-    query = request.args.get("query")
-    return "Your query for \"" + query + "\" returned 0 results, mostly beacuse " \
-                                       "the search algorithm hasn't been implemented yet."
 
 if __name__ == "__main__":
     app.run()

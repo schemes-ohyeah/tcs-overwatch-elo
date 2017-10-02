@@ -1,6 +1,6 @@
 import json
-from typing import Dict
-from TCS_Objects import Team, Player
+from typing import List, Dict
+from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
 class TCS_Functions():
@@ -57,7 +57,7 @@ class TCS_Functions():
         return team_dict
 
     @staticmethod
-    def calculate_matches(teams: Dict[int, Team]) -> None:
+    def calculate_matches(teams: Dict[int, Team]) -> Dict[int, Match]:
         """
         Goes through all matches and calculates new elo for teams with each
         map causing a new elo shift, rather than an overall bo3 / bo5
@@ -65,40 +65,71 @@ class TCS_Functions():
         :param teams:
         :return:
         """
-        matches = TCS_Scraper.scrape_matches(round=1)
-        for match in matches:
+        match_urls = TCS_Scraper.scrape_matches(round=1)
+        matches = {}
+        for match in match_urls:
             print("Scraping", match)
             team_1id, results, team_2id \
                 = TCS_Scraper.scrape_match(match, teams)
+            # If nothing happened on this match page, skip it
             if not results:
                 continue
             team_1 = teams[team_1id]
             team_2 = teams[team_2id]
 
+            team_1elos = [team_1.elo]
+            team_2elos = [team_2.elo]
             for result in results:
-                e1p, e2p = Team.calculate_elo(team_1.elo, team_2.elo, result)
+                # Calculate new elo for each team
+                e1p, e2p = Team.calculate_elo(team_1.elo, team_2.elo, result[0])
+
+                # Print elo changes for each team
                 print(team_1.name, str(e1p - team_1.elo))
                 print(team_2.name, str(e2p - team_2.elo))
+
+                # Store the elo changes
+                team_1elos.append(e1p)
+                team_2elos.append(e2p)
+
+                # Set new elo values
                 team_1.elo = e1p
                 team_2.elo = e2p
 
-    @staticmethod
-    def write_teams_tojson(teams: Dict[int, Team]) -> None:
-        """
-        Takes a list of team objects and writes them to a json file
+            # Create a new match object and append it to the list of matches
+            new_match = Match(
+                match,
+                team_1id,
+                team_2id,
+                results,
+                team_1elos,
+                team_2elos
+            )
+            matches[new_match.id] = new_match
 
-        :param teams: list of Team objects
-        :return: void write out to filename teams.json
+            # Add match id to each team object
+            team_1.matches.append(new_match.id)
+            team_2.matches.append(new_match.id)
+
+        return matches
+
+    @staticmethod
+    def write_tojson(data, filename) -> None:
         """
-        with open("teams.json", "w") as out:
+        Takes a dict of objects and writes them to a json file
+
+        :param data:
+        :param filename:
+        :return:
+        """
+        with open(filename, "w") as out:
             out.write(
                 json.dumps(
-                    [teams[team].__dict__() for team in teams]
+                    [data[datum].__dict__() for datum in data]
                 )
             )
 
     @staticmethod
-    def read_teams_from_json(reset_elo: bool=False) ->Dict[int, Team]:
+    def read_teams_from_json(reset: bool=False) ->Dict[int, Team]:
         """
         Reads the json file and creates a list of Team objects
 
@@ -118,7 +149,8 @@ class TCS_Functions():
                     team["name"],
                     players,
                     team["average_sr"],
-                    team["average_sr"] if reset_elo else team["elo"]
+                    team["average_sr"] if reset else team["elo"],
+                    None if reset else team["matches"]
                 )
             )
 
@@ -127,3 +159,26 @@ class TCS_Functions():
             team_dict[team.id] = team
 
         return team_dict
+
+    @staticmethod
+    def read_matches_from_json() -> Dict[int, Match]:
+        with open("matches.json", "r") as file:
+            data = json.load(file)
+
+        matches = []
+        for match in data:
+            matches.append(
+                Match(
+                    match["url"],
+                    match["team_1id"],
+                    match["team_2id"],
+                    match["results"],
+                    match["team_1elos"],
+                    match["team_2elos"]
+                )
+            )
+        match_dict = {}
+        for match in matches:
+            match_dict[match.id] = match
+
+        return match_dict

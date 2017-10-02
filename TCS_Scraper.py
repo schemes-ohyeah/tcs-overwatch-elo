@@ -35,13 +35,14 @@ class TCS_Scraper(Scraper):
         return scraped_players
 
     @staticmethod
-    def scrape_match(url, teams) -> (int, List[int], int):
+    def scrape_match(url, teams) -> (int, List[List[int]], int):
         """
         Returns the team ids and list of results relative to team 1 where
-        results is a list of ints
+        results is a list of ints in index 0
         [1] -> win
         [0] -> draw
         [-1] -> loss
+        and the map in index 1
 
         :param url:
         :return: team_1id, results,  team_2id
@@ -71,13 +72,13 @@ class TCS_Scraper(Scraper):
                     map = cols[1].text.strip()
                     winner = cols[2].text.strip()
                     if winner == team_1.name:
-                        results.append(1)
+                        results.append([1, map])
                         print(team_1.name + " wins " + map + " against " + team_2.name)
                     elif winner == team_2.name:
-                        results.append(-1)
+                        results.append([-1, map])
                         print(team_2.name + " wins " + map + " against " + team_1.name)
                     else:
-                        results.append(0)
+                        results.append([0, map])
                         print(team_1.name + " draws " + team_2.name + " on " + map)
         else:
             team_1id = team_2id = None

@@ -5,9 +5,10 @@ def main() -> None:
     # Warning: takes a while
     #scrape_teams_write_tojson()
 
-    teams = TCS.read_teams_from_json(reset_elo=True)
-    TCS.calculate_matches(teams)
-    TCS.write_teams_tojson(teams)
+    teams = TCS.read_teams_from_json(reset=True)
+    matches = TCS.calculate_matches(teams)
+    TCS.write_tojson(teams, "teams.json")
+    TCS.write_tojson(matches, "matches.json")
     for team in teams:
         print(teams[team])
 
@@ -21,6 +22,6 @@ def scrape_teams_write_tojson() -> None:
     # Create a dictionary  of Team objects by scraping TCS and Overbuff
     teams = TCS.get_teams()
     # Save this data to a json file named teams.json
-    TCS.write_teams_tojson(teams)
+    TCS.write_tojson(teams, "teams.json")
 
 main()

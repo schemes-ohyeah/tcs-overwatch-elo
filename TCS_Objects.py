@@ -1,5 +1,5 @@
 from TCS_Scraper import TCS_Scraper
-from typing import List
+from typing import List, Any
 from Overbuff_Scraper import Overbuff_Scraper as Overbuff
 
 class Player():
@@ -31,7 +31,7 @@ class Player():
 class Team():
     def __init__(self, url: str, region: str, name: str,
                  players: List[Player]=None, average_sr: float=None,
-                 elo: float=None):
+                 elo: float=None, matches: List[int]=None):
         """
         If web scraping from TCS, playerlist will be None so we go to the
         individual team page and scrape from there.
@@ -57,6 +57,8 @@ class Team():
             self.scrape_player_list()
         if average_sr is None:
             self.calculate_average()
+        if matches is None:
+            self.matches = []
 
     def __str__(self):
         players = ""
@@ -76,7 +78,8 @@ class Team():
             "name" : self.name,
             "players" : [player.__dict__() for player in self.players],
             "average_sr" : self.average_sr,
-            "elo" : self.elo
+            "elo" : self.elo,
+            "matches" : self.matches
         }
         return dict
 
@@ -107,7 +110,7 @@ class Team():
             sr = player.skill_rating
             if sr > 0:
                 team_list.append(sr)
-            # Unranked people are listed as -1 SR, do not consider in average
+                # Unranked people are listed as -1 SR, do not consider in average
 
         # If entire team is unranked
         if not team_list:
@@ -164,3 +167,26 @@ class Team():
         r_2prime = opponent_elo + K * (S_2 - E_2)
 
         return r_1prime, r_2prime
+
+class Match():
+    def __init__(self, url: str, t1_id: int, t2_id: int, results: List[List[Any]],
+                 t1_elos: List[float], t2_elos: List[float]):
+        self.id = int(url.split("/")[-1])
+        self.url = url
+        self.team_1id = t1_id
+        self.team_2id = t2_id
+        self.results = results
+        self.team_1elos = t1_elos
+        self.team_2elos = t2_elos
+
+    def __dict__(self):
+        dict = {
+            "id" : self.id,
+            "url" : self.url,
+            "team_1id" : self.team_1id,
+            "team_2id": self.team_2id,
+            "results" : self.results,
+            "team_1elos" : self.team_1elos,
+            "team_2elos" : self.team_2elos
+        }
+        return dict
