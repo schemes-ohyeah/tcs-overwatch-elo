@@ -97,6 +97,7 @@ class TCS_Scraper(Scraper):
             soup = Scraper.get_soup(url)
             matchups = soup.find_all("div", {"data-toggle":"tooltip"})
             for matchup in matchups:
+                print(matchup)
                 scores = matchup.find_all("div", {"class":"pull-right"})
                 test = 0
                 for score in scores:
