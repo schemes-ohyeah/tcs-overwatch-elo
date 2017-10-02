@@ -1,5 +1,4 @@
 from TCS_Functions import TCS_Functions as TCS
-from TCS_Scraper import TCS_Scraper
 
 def main() -> None:
     # Uncomment the following line to scrape

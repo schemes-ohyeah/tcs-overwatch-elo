@@ -66,6 +66,7 @@ class TCS_Scraper(Scraper):
                 for row in result_table.find_all("tr"):
                     cols = row.find_all("td")
                     if not cols:
+                        # Top row will be all <th> instead of <td>. Skip this row
                         continue
                     map = cols[1].text.strip()
                     winner = cols[2].text.strip()
