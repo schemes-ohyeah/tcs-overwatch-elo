@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- above 3 meta tags must come first -->
+
+    <meta name="description" content="">
+    <meta name="author" content="">
+    {# TODO Get a favicon  #}
+    {#    <link rel="icon" href="/static/img/favicon.ico">#}
+
+    <title>
+        {% if og and og["title"] %}
+            {{ og["title"] }}
+        {% elif title %}
+            {{ title }}
+        {% endif %}
+    </title>
+
+    {% block meta %}
+    {% endblock %}
+
+    <link rel="stylesheet"
+          href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+          integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ"
+          crossorigin="anonymous">
+    <link href="/static/css/style.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,300italic,400italic,700italic" rel="stylesheet"
+          type="text/css">
+    {% block css %}
+    {% endblock %}
+
+    {% block head %}
+    {% endblock %}
+</head>
+<body>
+{% block nav %}
+{% endblock %}
+
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        <style>
+            .message {
+                z-index: 100;
+                margin-top: 1rem;
+            }
+
+            .alert-dismissible .close {
+                top: 0;
+                right: 0;
+                padding: 0;
+            }
+        </style>
+        {% for message in messages %}
+            <div class="container alert alert-info alert-dismissible fade show message" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+{% block content %}
+{% endblock %}
+
+{% include "base/footer.html" %}
+{% include "base/scripts.html" %}
+
+{% block commonscript %}
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+</body>
+</html>

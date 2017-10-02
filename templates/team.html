@@ -1,0 +1,28 @@
+{% extends "bare_layout.html" %}
+
+{% block content %}
+    <div class="container">
+        <h1>{{ team.name }} ({{ team.region|capitalize }})</h1>
+        <a href="{{ team.url }}">{{ team.url }}</a>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Player</th>
+                <th>Skill Rating</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for player in team.players %}
+                <tr>
+                    <td>{{ player.battle_tag }}</td>
+                    <td>{{ player.skill_rating }}</td>
+                </tr>
+            {% endfor %}
+            <tr>
+                <th>Average</th>
+                <td>{{ team.average_sr|round(2) }}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
