@@ -34,5 +34,11 @@ def team(id):
     team = teams[int(id)]
     return render_template("team.html", team=team)
 
+@app.route("/search")
+def search():
+    query = request.args.get("query")
+    return "Your query for \"" + query + "\" returned 0 results, mostly beacuse " \
+                                       "the search algorithm hasn't been implemented yet."
+
 if __name__ == "__main__":
     app.run()
