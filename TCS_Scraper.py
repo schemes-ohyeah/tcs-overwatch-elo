@@ -35,13 +35,14 @@ class TCS_Scraper(Scraper):
         return scraped_players
 
     @staticmethod
-    def scrape_match(url, teams) -> (int, List[int], int):
+    def scrape_match(url, teams) -> (int, List[List[int]], int):
         """
         Returns the team ids and list of results relative to team 1 where
-        results is a list of ints
+        results is a list of ints in index 0
         [1] -> win
         [0] -> draw
         [-1] -> loss
+        and the map in index 1
 
         :param url:
         :return: team_1id, results,  team_2id
@@ -66,17 +67,18 @@ class TCS_Scraper(Scraper):
                 for row in result_table.find_all("tr"):
                     cols = row.find_all("td")
                     if not cols:
+                        # Top row will be all <th> instead of <td>. Skip this row
                         continue
                     map = cols[1].text.strip()
                     winner = cols[2].text.strip()
                     if winner == team_1.name:
-                        results.append(1)
+                        results.append([1, map])
                         print(team_1.name + " wins " + map + " against " + team_2.name)
                     elif winner == team_2.name:
-                        results.append(-1)
+                        results.append([-1, map])
                         print(team_2.name + " wins " + map + " against " + team_1.name)
                     else:
-                        results.append(0)
+                        results.append([0, map])
                         print(team_1.name + " draws " + team_2.name + " on " + map)
         else:
             team_1id = team_2id = None
@@ -84,7 +86,7 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_matches() -> List[str]:
+    def scrape_matches(round: int) -> List[str]:
         """
         Gets a list of all matches by visiting each region's individual page
 
@@ -92,20 +94,27 @@ class TCS_Scraper(Scraper):
         """
         base_url = "https://compete.tespa.org/tournament/75/phase/1/group/"
         matches = []
+        # for each group (region)
         for x in range(1, 5):
             url = base_url + str(x)
             soup = Scraper.get_soup(url)
-            matchups = soup.find_all("div", {"data-toggle":"tooltip"})
-            for matchup in matchups:
-                print(matchup)
-                scores = matchup.find_all("div", {"class":"pull-right"})
-                test = 0
-                for score in scores:
-                    if score.text.strip() == "0" or score.text.strip() == "F":
-                        test += 1
-                match_url = matchup.find("a").get("href")
-                if test != 2:
-                    matches.append(match_url)
+            # for each round up to the specific round in parameter, inclusive
+            for x in range(1, round + 1):
+                round_soup = soup.find("div", {"id" : "collapseRound" + str(x)})
+                matchups = round_soup.find_all("table",
+                                               {"class" : "table margin-top margin-bottom panel"})
+                # for each matchup in this round
+                for matchup in matchups:
+                    # Check that something has happened in this matchup
+                    # eg no forfeit or empty score
+                    scores = matchup.find_all("div", {"class" : "pull-right"})
+                    score1 = scores[0].text.strip()
+                    score1 = int(score1) if score1.isdigit() else 0
+                    score2 = scores[1].text.strip()
+                    score2 = int(score2) if score2.isdigit() else 0
+                    if score1 + score2 > 0:
+                        match_url = matchup.find("a").get("href")
+                        matches.append(match_url)
 
         # URLs are duplicated for each cell due to how the UI is laid out
-        return matches[::2]
+        return matches
