@@ -122,16 +122,17 @@ class Team():
 
         # If entire team is unranked
         if not team_list:
-            return -1
-
-        # If for some reason there are more than 6 players,
-        # only use the top 6 ranked players, assume rest are substitutes
-        if len(team_list) > 6:
-            team_list.sort(reverse=True)
-            team_list = team_list[:6]
-        team_sr = sum(team_list) / len(team_list)
-        self.average_sr = team_sr
-        self.elo = team_sr
+            # Arbitrarily set them to gold
+            self.elo = 2000
+        else:
+            # If for some reason there are more than 6 players,
+            # only use the top 6 ranked players, assume rest are substitutes
+            if len(team_list) > 6:
+                team_list.sort(reverse=True)
+                team_list = team_list[:6]
+            team_sr = sum(team_list) / len(team_list)
+            self.average_sr = team_sr
+            self.elo = team_sr
 
     @staticmethod
     def calculate_elo(my_elo: float, opponent_elo: float, result: int):
