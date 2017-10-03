@@ -1,12 +1,22 @@
 {% extends "bare_layout.html" %}
 
+{% block head %}
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        .tick {
+            font-size: medium;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <div class="container">
         <h1>{{ team.name }} ({{ team.region|capitalize }})</h1>
         <a href="{{ team.url }}">{{ team.url }}</a>
 
         <!-- Table of players -->
-        <table class="table">
+        <h2>Player Roster</h2>
+        <table class="table table-sm">
             <thead>
             <tr>
                 <th>Player</th>
@@ -15,36 +25,94 @@
             </thead>
             <tbody>
             {% for player in team.players %}
+                {% set battle_tag = player.battle_tag.split("#") %}
                 <tr>
-                    <td>{{ player.battle_tag }}</td>
-                    <td>{{ player.skill_rating }}</td>
+                    <td>
+                        <a href="https://www.overbuff.com/players/pc/{{ battle_tag[0] }}-{{ battle_tag[1] }}?mode=competitive">
+                            {{ player.battle_tag }}
+                        </a>
+                    </td>
+                    <td>
+                        {% if player.skill_rating > 0 %}
+                            {{ player.skill_rating }}
+                        {% else %}
+                            <em>Unranked</em>
+                        {% endif %}
+                    </td>
                 </tr>
             {% endfor %}
             <tr>
                 <th>Average</th>
-                <td>{{ team.average_sr|round(2) }}</td>
+                <td><strong>{{ team.average_sr|round(2) }}</strong></td>
             </tr>
             </tbody>
         </table>
 
-        <!-- Table of matches -->
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Match</th>
-                <th>Opponent</th>
-                <th>Map</th>
-                <th>Result</th>
-                <th>New Elo</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for match in matches %}
-                {% set outer_loop = loop %}
+        <!-- Elo Trend -->
+        <h2>Elo Trend</h2>
+        <svg id="elo-trend" width="1000" height="250"></svg>
+        <script>
+            var elo_trend = {{ elo_trend }};
+            var vis = d3.select("#elo-trend"),
+                WIDTH = 1000,
+                HEIGHT = 250,
+                MARGINS = {
+                    top: 20,
+                    right: 20,
+                    bottom: 20,
+                    left: 50
+                },
+                xRange = d3.scaleLinear().range([MARGINS.left, WIDTH - MARGINS.right])
+                    .domain([0, elo_trend.length - 1]),
+                yRange = d3.scaleLinear().range([HEIGHT - MARGINS.top, MARGINS.bottom])
+                    .domain([
+                        Math.min.apply(null, elo_trend) - 50,
+                        Math.max.apply(null, elo_trend) + 50
+                    ]),
+                xAxis = d3.axisBottom()
+                    .scale(xRange),
+                yAxis = d3.axisLeft()
+                    .scale(yRange);
+
+            vis.append('svg:g')
+                .attr('class', 'x axis')
+                .attr('transform', 'translate(0,' + (HEIGHT - MARGINS.bottom) + ')')
+                .call(xAxis);
+
+            vis.append('svg:g')
+                .attr('class', 'y axis')
+                .attr('transform', 'translate(' + (MARGINS.left) + ',0)')
+                .call(yAxis);
+            var lineFunc = d3.line()
+                .x(function(d, i) {
+                    return xRange(i);
+                })
+                .y(function(d) {
+                    return yRange(d);
+                })
+                .curve(d3.curveLinear);
+            vis.append('svg:path')
+                .attr('d', lineFunc(elo_trend))
+                .attr('stroke', 'blue')
+                .attr('stroke-width', 2)
+                .attr('fill', 'none');
+        </script>
+
+        <!-- Matches -->
+        <h2>Matches</h2>
+        {% for match in matches %}
+            <h5>Match {{ loop.index }} against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</h5>
+            <table class="table table-sm">
+                <thead>
+                <tr>
+                    <th>Map</th>
+                    <th>Result</th>
+                    <th>New Elo</th>
+                </tr>
+                </thead>
+                <tbody>
                 {% for result in match.results %}
                     <tr>
-                        <td>{{ outer_loop.index }}</td>
-                        <td>{{ opponent }}</td>
                         <td>{{ result[1] }}</td>
                         {% if result[0] == 1 %}
                             <td>Win</td>
@@ -61,8 +129,14 @@
                         <td>{{ match.elos[loop.index]|round(2) }}</td>
                     </tr>
                 {% endfor %}
-            {% endfor %}
-            </tbody>
-        </table>
+                </tbody>
+            </table>
+        {% endfor %}
+
+        <!-- Future Matches -->
+        <h2>Future Matches</h2>
+        {% for match in future_matches %}
+            <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</p>
+        {% endfor %}
     </div>
 {% endblock %}

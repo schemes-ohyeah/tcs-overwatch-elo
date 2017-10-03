@@ -35,6 +35,27 @@ class TCS_Scraper(Scraper):
         return scraped_players
 
     @staticmethod
+    def scrape_future_match(url, teams) -> (int, int):
+        """
+        Returns two team ids in the matchup
+
+        :param url:
+        :param teams:
+        :return:
+        """
+        soup = Scraper.get_soup(url)
+        team_1url = soup.find("div", {"id" : "player1Container"}).find("a")
+        team_1url = team_1url.get("href") if team_1url else None
+        team_2url = soup.find("div", {"id" : "player2Container"}).find("a")
+        team_2url = team_2url.get("href") if team_2url else None
+
+        if team_1url and team_2url:
+            team_1id = int(team_1url.split("/")[-1])
+            team_2id = int(team_2url.split("/")[-1])
+            return team_1id, team_2id
+        return None, None
+
+    @staticmethod
     def scrape_match(url, teams) -> (int, List[List[int]], int):
         """
         Returns the team ids and list of results relative to team 1 where
@@ -86,7 +107,7 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_matches(round: int) -> List[str]:
+    def scrape_matches(end_round: int, start_round: int=1, future=False) -> List[str]:
         """
         Gets a list of all matches by visiting each region's individual page
 
@@ -96,26 +117,35 @@ class TCS_Scraper(Scraper):
         matches = []
         # for each group (region)
         for x in range(1, 5):
+            print("Looking for matches in group", x)
             url = base_url + str(x)
             soup = Scraper.get_soup(url)
 
             # for each round up to the specific round in parameter, inclusive
-            for x in range(1, round + 1):
+            for x in range(start_round, end_round + 1):
+                print("Looking for matches in round", x)
                 round_soup = soup.find("div", {"id" : "collapseRound" + str(x)})
                 matchups = round_soup.find_all("table",
                                                {"class" : "table margin-top margin-bottom panel"})
-                # for each matchup in this round
-                for matchup in matchups:
-                    # Check that something has happened in this matchup
-                    # eg no forfeit or empty score
-                    scores = matchup.find_all("div", {"class" : "pull-right"})
-                    score1 = scores[0].text.strip()
-                    score1 = int(score1) if score1.isdigit() else 0
-                    score2 = scores[1].text.strip()
-                    score2 = int(score2) if score2.isdigit() else 0
-                    if score1 + score2 > 0:
+
+                if future:
+                    # If future round do not verify if it has taken place
+                    for matchup in matchups:
                         match_url = matchup.find("a").get("href")
                         matches.append(match_url)
+                else:
+                    # Otherwise, make sure the game has been played by making
+                    # sure the total score is more than 0
+                    for matchup in matchups:
+                        # Check that something has happened in this matchup
+                        # eg no forfeit or empty score
+                        scores = matchup.find_all("div", {"class" : "pull-right"})
+                        score1 = scores[0].text.strip()
+                        score1 = int(score1) if score1.isdigit() else 0
+                        score2 = scores[1].text.strip()
+                        score2 = int(score2) if score2.isdigit() else 0
+                        if score1 + score2 > 0:
+                            match_url = matchup.find("a").get("href")
+                            matches.append(match_url)
 
-        # URLs are duplicated for each cell due to how the UI is laid out
         return matches
