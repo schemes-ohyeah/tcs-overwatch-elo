@@ -3,6 +3,8 @@ from typing import List, Dict
 from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
+CURRENT_ROUND  = 1
+
 class TCS_Functions():
     @staticmethod
     def get_teams() -> Dict[int, Team]:
@@ -65,7 +67,7 @@ class TCS_Functions():
         :param teams:
         :return:
         """
-        match_urls = TCS_Scraper.scrape_matches(round=1)
+        match_urls = TCS_Scraper.scrape_matches(end_round=CURRENT_ROUND)
         matches = {}
         for match in match_urls:
             print("Scraping", match)
@@ -100,15 +102,46 @@ class TCS_Functions():
                 match,
                 team_1id,
                 team_2id,
-                results,
                 team_1elos,
-                team_2elos
+                team_2elos,
+                results
             )
             matches[new_match.id] = new_match
 
             # Add match id to each team object
             team_1.matches.append(new_match.id)
             team_2.matches.append(new_match.id)
+
+        return matches
+
+    @staticmethod
+    def predict_matches(teams: Dict[int, Team]):
+        match_urls = TCS_Scraper.scrape_matches(
+            start_round=CURRENT_ROUND + 1,
+            end_round=CURRENT_ROUND + 2,
+            future=True
+        )
+        matches = {}
+        for match in match_urls:
+            print("Scraping", match)
+            team_1id, team_2id = TCS_Scraper.scrape_future_match(match, teams)
+            # If there are not 2 teams in this match, skip
+            if not (team_1id and team_2id):
+                continue
+            team_1 = teams[team_1id]
+            team_2 = teams[team_2id]
+            new_match = Match(
+                match,
+                team_1id,
+                team_2id,
+                [team_1.elo],
+                [team_2.elo],
+            )
+            matches[new_match.id] = new_match
+
+            # Add future match ids to each team object
+            team_1.future_matches.append(new_match.id)
+            team_2.future_matches.append(new_match.id)
 
         return matches
 
@@ -129,7 +162,7 @@ class TCS_Functions():
             )
 
     @staticmethod
-    def read_teams_from_json(reset: bool=False) ->Dict[int, Team]:
+    def read_teams_from_json(reset: bool=False) -> Dict[int, Team]:
         """
         Reads the json file and creates a list of Team objects
 
@@ -150,7 +183,8 @@ class TCS_Functions():
                     players,
                     team["average_sr"],
                     team["average_sr"] if reset else team["elo"],
-                    None if reset else team["matches"]
+                    None if reset else team["matches"],
+                    None if reset else team["future_matches"]
                 )
             )
 
@@ -161,8 +195,12 @@ class TCS_Functions():
         return team_dict
 
     @staticmethod
-    def read_matches_from_json() -> Dict[int, Match]:
-        with open("matches.json", "r") as file:
+    def read_matches_from_json(future=False) -> Dict[int, Match]:
+        if future:
+            filename = "future_matches.json"
+        else:
+            filename = "matches.json"
+        with open(filename, "r") as file:
             data = json.load(file)
 
         matches = []
@@ -172,9 +210,9 @@ class TCS_Functions():
                     match["url"],
                     match["team_1id"],
                     match["team_2id"],
-                    match["results"],
                     match["team_1elos"],
-                    match["team_2elos"]
+                    match["team_2elos"],
+                    match["results"],
                 )
             )
         match_dict = {}

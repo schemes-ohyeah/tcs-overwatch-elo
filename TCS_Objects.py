@@ -31,7 +31,7 @@ class Player():
 class Team():
     def __init__(self, url: str, region: str, name: str,
                  players: List[Player]=None, average_sr: float=None,
-                 elo: float=None, matches: List[int]=None):
+                 elo: float=None, matches: List[int]=None, future_matches: List[int]=None):
         """
         If web scraping from TCS, playerlist will be None so we go to the
         individual team page and scrape from there.
@@ -44,6 +44,9 @@ class Team():
         :param name: team name
         :param players: list of Player objects
         :param average_sr:
+        :param elo:
+        :param matches:
+        :param future_match:
         """
         self.id = int(url.split("/")[-1])
         self.url = url
@@ -53,6 +56,7 @@ class Team():
         self.average_sr = average_sr
         self.elo = elo
         self.matches = matches
+        self.future_matches = future_matches
 
         if players is None:
             self.scrape_player_list()
@@ -60,6 +64,8 @@ class Team():
             self.calculate_average()
         if matches is None:
             self.matches = []
+        if future_matches is None:
+            self.future_matches = []
 
     def __str__(self):
         players = ""
@@ -80,7 +86,8 @@ class Team():
             "players" : [player.__dict__() for player in self.players],
             "average_sr" : self.average_sr,
             "elo" : self.elo,
-            "matches" : self.matches
+            "matches" : self.matches,
+            "future_matches" : self.future_matches
         }
         return dict
 
@@ -115,16 +122,17 @@ class Team():
 
         # If entire team is unranked
         if not team_list:
-            return -1
-
-        # If for some reason there are more than 6 players,
-        # only use the top 6 ranked players, assume rest are substitutes
-        if len(team_list) > 6:
-            team_list.sort(reverse=True)
-            team_list = team_list[:6]
-        team_sr = sum(team_list) / len(team_list)
-        self.average_sr = team_sr
-        self.elo = team_sr
+            # Arbitrarily set them to gold
+            self.elo = 2000
+        else:
+            # If for some reason there are more than 6 players,
+            # only use the top 6 ranked players, assume rest are substitutes
+            if len(team_list) > 6:
+                team_list.sort(reverse=True)
+                team_list = team_list[:6]
+            team_sr = sum(team_list) / len(team_list)
+            self.average_sr = team_sr
+            self.elo = team_sr
 
     @staticmethod
     def calculate_elo(my_elo: float, opponent_elo: float, result: int):
@@ -170,8 +178,9 @@ class Team():
         return r_1prime, r_2prime
 
 class Match():
-    def __init__(self, url: str, t1_id: int, t2_id: int, results: List[List[Any]],
-                 t1_elos: List[float], t2_elos: List[float]):
+    def __init__(self, url: str, t1_id: int, t2_id: int,
+                 t1_elos: List[float], t2_elos: List[float],
+                results: List[List[Any]]=None):
         self.id = int(url.split("/")[-1])
         self.url = url
         self.team_1id = t1_id
@@ -186,8 +195,22 @@ class Match():
             "url" : self.url,
             "team_1id" : self.team_1id,
             "team_2id": self.team_2id,
-            "results" : self.results,
             "team_1elos" : self.team_1elos,
-            "team_2elos" : self.team_2elos
+            "team_2elos" : self.team_2elos,
+            "results": self.results,
         }
         return dict
+
+    @staticmethod
+    def calculate_win_chance(elo_a: float, elo_b: float) -> float:
+        """
+        Probably to win based on math from here
+        https://www.reddit.com/r/chess/comments/2y6ezm/how_to_guide_converting_elo_differences_to/
+
+        :param elo_a:
+        :param elo_b:
+        :return:
+        """
+        elo_difference = elo_b - elo_a
+        m = elo_difference / 400
+        return 1 / (1 + pow(10, m))
