@@ -40,8 +40,22 @@ def rankings(region=None):
 
 @app.route("/search")
 def search():
-    query = request.args.get("query")
-    return render_template("search.html", query=query)
+    global GLOBAL_teams
+    query = request.args.get("query").lower()
+    teams = [GLOBAL_teams[key] for key in GLOBAL_teams]
+    results = []
+    for team in teams:
+        if query in team.name.lower():
+            results.append(team)
+        if query in team.university.lower():
+            results.append(team)
+        for player in team.players:
+            if query in player.battle_tag.lower():
+                results.append(team)
+
+    return render_template("search.html",
+                           query=query,
+                           results=results)
 
 @app.route("/team/<id>")
 def team(id):

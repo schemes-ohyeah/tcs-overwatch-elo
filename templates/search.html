@@ -1,7 +1,29 @@
 {% extends "bare_layout.html" %}
 
 {% block content %}
-<div class="container">
-    <p class="text-center">Your query for "<em>{{ query }}</em>" returned 0 results, mostly because the search algorithm hasn't been implemented yet.</p>
-</div>
+    <div class="container">
+        <h1>Search results for "<em>{{ query }}</em>"</h1>
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Team</th>
+                <th>University</th>
+                <th>Region</th>
+                <th>SR</th>
+                <th>Elo</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for team in results %}
+                <tr>
+                    <td><a href="team/{{ team.id }}">{{ team.name }}</a></td>
+                    <td>{{ team.university }}</td>
+                    <td class="text-capitalize">{{ team.region }}</td>
+                    <td>{{ team.average_sr|round|int }}</td>
+                    <td class="font-weight-bold">{{ team.elo|round|int }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
 {% endblock %}
