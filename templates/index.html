@@ -4,9 +4,9 @@
     <div class="jumbotron">
         <div class="container">
             <h1 class="display-3">TCS Overwatch Elo Rankings</h1>
-            <p class="lead">This website uses data from the <a href="https://compete.tespa.org/tournament/75">Tespa Collegiate Series - Overwatch</a> bracket to assign elo ratings to every team on the bracket.</p>
+            <p class="lead">This website uses data from the <a href="https://compete.tespa.org/tournament/75">Tespa Collegiate Series - Overwatch</a> bracket to assign Elo ratings to every team on the bracket.</p>
             <hr class="my-4">
-            <p>We start with the team's average skill rating and use the elo system from that.</p>
+            <p>Teams start with their average skill rating and will go through the Elo system as they playoff in the bracket!</p>
             <p class="lead">
                 <a class="btn btn-primary btn-lg" href="/rankings" role="button">See Rankings</a>
             </p>
@@ -15,7 +15,21 @@
     <div class="container">
         <div id="methodology">
             <h2>Methodology</h2>
-            <p>lorem ipsum with some fancy math stuff</p>
+            <p>All data viewed on this website is either scraped from Tespa's official website, Overbuff, or calculated from the scraped data.</p>
+
+            <h4>1. Calculating Average SR</h4>
+            <p>When scraping team members from Tespa's website, only official players were taken. This excluded team managers / coordinators and substitutes.</p>
+            <p>Their Battle Tag was queried to Overbuff to find their skill rating. However, do note that if a person was unranked, they would be excluded from the average calculation. If for some reason, the roster contained more than 6 players on the starting roster, only the top 6 ranked players would be factored into the calculation.</p>
+
+            <h4>2. Calculating Elo</h4>
+            <p>Rather than calculating Elo after every match (bo3 / bo5), it is updated after every map so that matches going 2&ndash;1 will result in a different result than a 2&ndash;0.</p>
+            <p>Elo is calculated using some math found <a href="https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/" target="_blank">here</a> with the &kappa; value being set to 50, meaning for each game, a team could gain or lose no more than 50 Elo</p>
+
+            <h4>3. Predicting Future Matches</h4>
+            <p>Using a team's most recent elo, predictions of future matches can be calculated using some math found <a href="https://www.reddit.com/r/chess/comments/2y6ezm/how_to_guide_converting_elo_differences_to/" target="_blank">here.</a></p>
+
+            <h4>Additional Details</h4>
+            <p>This site runs off an Ubuntu based server running Python 3.6 and the Flask web micro-framework. All scraped data is saved to and served from json files rather than SQL tables. You may view the source code <a href="https://github.com/schemes-ohyeah/tcs-overwatch-elo">here.</a></p>
         </div>
     </div>
 
