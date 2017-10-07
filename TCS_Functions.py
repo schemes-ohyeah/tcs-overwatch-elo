@@ -48,7 +48,7 @@ class TCS_Functions():
                     Team(
                         team[URL],
                         REGION_NAMES[x],
-                        team[NAME],
+                        team[NAME]
                     )
                 )
 
@@ -180,6 +180,7 @@ class TCS_Functions():
                     team["url"],
                     team["region"],
                     team["name"],
+                    team["university"],
                     players,
                     team["average_sr"],
                     team["average_sr"] if reset else team["elo"],

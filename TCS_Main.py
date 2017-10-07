@@ -5,7 +5,8 @@ def main() -> None:
     # Warning: takes a while
     #scrape_teams_write_tojson()
 
-    teams = TCS.read_teams_from_json(reset=True)
+    teams = TCS.get_teams()
+    # teams = TCS.read_teams_from_json(reset=True)
     matches = TCS.calculate_matches(teams)
     future_matches = TCS.predict_matches(teams)
     TCS.write_tojson(teams, "teams.json")
