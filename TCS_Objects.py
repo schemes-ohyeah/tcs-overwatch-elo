@@ -29,7 +29,7 @@ class Player():
         return dict
 
 class Team():
-    def __init__(self, url: str, region: str, name: str,
+    def __init__(self, url: str, region: str, name: str, university: str=None,
                  players: List[Player]=None, average_sr: float=None,
                  elo: float=None, matches: List[int]=None, future_matches: List[int]=None):
         """
@@ -40,24 +40,28 @@ class Team():
         Otherwise are are reading from a json file and scraping is unnecessary.
 
         :param url:
-        :param region: west, south, north, east
-        :param name: team name
-        :param players: list of Player objects
+        :param region:
+        :param name:
+        :param university:
+        :param players:
         :param average_sr:
         :param elo:
         :param matches:
-        :param future_match:
+        :param future_matches:
         """
         self.id = int(url.split("/")[-1])
         self.url = url
         self.region = region
         self.name = name
+        self.university = university
         self.players = players
         self.average_sr = average_sr
         self.elo = elo
         self.matches = matches
         self.future_matches = future_matches
 
+        if university is None:
+            self.scrape_university()
         if players is None:
             self.scrape_player_list()
         if average_sr is None:
@@ -69,10 +73,14 @@ class Team():
 
     def __str__(self):
         players = ""
-        for player in self.players:
-            players += "\t" + str(player) + "\n"
+        if self.players:
+            for player in self.players:
+                players += "\t" + str(player) + "\n"
+        else:
+            players = "No Players"
 
-        return self.name + " <" + self.url + ">\n" \
+        return self.name + " (" + self.university + ")\n"\
+               +" <" + self.url + ">\n" \
                + "region: " + self.region + "\n" \
                + "average_sr: " + str(self.average_sr) + "\n" \
                + "elo: " + str(self.elo) + "\n" \
@@ -83,6 +91,7 @@ class Team():
             "url" : self.url,
             "region" : self.region,
             "name" : self.name,
+            "university" : self.university,
             "players" : [player.__dict__() for player in self.players],
             "average_sr" : self.average_sr,
             "elo" : self.elo,
@@ -90,6 +99,14 @@ class Team():
             "future_matches" : self.future_matches
         }
         return dict
+
+    def scrape_university(self):
+        """
+        Takes the team url and looks up the University
+
+        :return:
+        """
+        self.university = TCS_Scraper.scrape_university(self.url)
 
     def scrape_player_list(self):
         """

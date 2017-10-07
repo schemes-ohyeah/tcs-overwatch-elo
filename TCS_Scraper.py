@@ -12,7 +12,7 @@ class TCS_Scraper(Scraper):
         return Scraper.get_soup("https://compete.tespa.org/tournament/75/phase/1")
 
     @staticmethod
-    def scrape_players(url) ->List[str]:
+    def scrape_players(url: str) ->List[str]:
         """
         Takes a team url and gets all battle tags
         excluding team coordinator and substitutes
@@ -33,6 +33,19 @@ class TCS_Scraper(Scraper):
                     handle = row.find("td", {"class": "text-break"}).text
                     scraped_players.append(handle)
         return scraped_players
+
+    @staticmethod
+    def scrape_university(url: str) -> str:
+        """
+        Gets the University name from the team page
+
+        :param url:
+        :return:
+        """
+        soup = Scraper.get_soup(url, "lxml")
+
+        details = soup.find_all("span", {"class": "hdg-em"})
+        return details[len(details) - 1].text
 
     @staticmethod
     def scrape_future_match(url, teams) -> (int, int):

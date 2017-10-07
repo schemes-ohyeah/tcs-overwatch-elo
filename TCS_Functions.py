@@ -1,9 +1,9 @@
 import json
-from typing import List, Dict
+from typing import Dict
 from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
-CURRENT_ROUND  = 1
+CURRENT_ROUND  = 2
 
 class TCS_Functions():
     @staticmethod
@@ -48,7 +48,7 @@ class TCS_Functions():
                     Team(
                         team[URL],
                         REGION_NAMES[x],
-                        team[NAME],
+                        team[NAME]
                     )
                 )
 
@@ -154,7 +154,7 @@ class TCS_Functions():
         :param filename:
         :return:
         """
-        with open(filename, "w") as out:
+        with open("static/json/" + filename, "w") as out:
             out.write(
                 json.dumps(
                     [data[datum].__dict__() for datum in data]
@@ -168,7 +168,7 @@ class TCS_Functions():
 
         :return:
         """
-        with open("teams.json", "r") as file:
+        with open("static/json/teams.json", "r") as file:
             data = json.load(file)
 
         teams = []
@@ -180,6 +180,7 @@ class TCS_Functions():
                     team["url"],
                     team["region"],
                     team["name"],
+                    None,
                     players,
                     team["average_sr"],
                     team["average_sr"] if reset else team["elo"],
@@ -196,10 +197,11 @@ class TCS_Functions():
 
     @staticmethod
     def read_matches_from_json(future=False) -> Dict[int, Match]:
+        filename = "static/json/"
         if future:
-            filename = "future_matches.json"
+            filename += "future_matches.json"
         else:
-            filename = "matches.json"
+            filename += "matches.json"
         with open(filename, "r") as file:
             data = json.load(file)
 

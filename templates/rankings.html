@@ -4,7 +4,7 @@
     <div class="container">
         <h1>Rankings for {{ region|capitalize }}</h1>
         <p>Raw json dump for this page available <a href="{{ json_link }}">here</a>.</p>
-        <p><em>Last updated with Round 1 data</em></p>
+        <p><em>Last updated with Round 2 data (Round 3 - 4 scheduled)</em></p>
         <div class="text-center">
             <div class="btn-group" role="group" aria-label="region-select">
                 <a href="/rankings" class="btn btn-secondary">Nationwide</a>
@@ -19,6 +19,7 @@
             <tr>
                 <th>Rank</th>
                 <th>Team</th>
+                <th>University</th>
                 <th>Region</th>
                 <th>SR</th>
                 <th>Elo</th>
@@ -29,6 +30,7 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td><a href="/team/{{ team.id }}">{{ team.name }}</a></td>
+                    <td>{{ team.university }}</td>
                     <td class="text-capitalize">{{ team.region }}</td>
                     <td>{{ team.average_sr|round|int }}</td>
                     <td class="font-weight-bold">{{ team.elo|round|int }}</td>
