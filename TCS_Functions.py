@@ -180,7 +180,7 @@ class TCS_Functions():
                     team["url"],
                     team["region"],
                     team["name"],
-                    None,
+                    team["university"],
                     players,
                     team["average_sr"],
                     team["average_sr"] if reset else team["elo"],

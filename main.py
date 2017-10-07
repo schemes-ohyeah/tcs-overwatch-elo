@@ -41,8 +41,7 @@ def rankings(region=None):
 @app.route("/search")
 def search():
     query = request.args.get("query")
-    return "Your query for \"" + query + "\" returned 0 results, mostly because " \
-                                       "the search algorithm hasn't been implemented yet."
+    return render_template("search.html", query=query)
 
 @app.route("/team/<id>")
 def team(id):

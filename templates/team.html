@@ -3,8 +3,8 @@
 {% block head %}
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <style>
-        .tick {
-            font-size: medium;
+        path {
+            stroke: #0275d8;
         }
     </style>
 {% endblock %}
@@ -12,7 +12,8 @@
 {% block content %}
     <div class="container">
         <h1>{{ team.name }} ({{ team.region|capitalize }})</h1>
-        <a href="{{ team.url }}">{{ team.url }}</a>
+        <em>{{ team.university }}</em><br>
+        <a href="{{ team.url }}">{{ team.url }}</a><br><br>
 
         <!-- Table of players -->
         <h2>Player Roster</h2>
