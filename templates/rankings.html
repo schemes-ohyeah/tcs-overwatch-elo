@@ -19,6 +19,7 @@
             <tr>
                 <th>Rank</th>
                 <th>Team</th>
+                <th>University</th>
                 <th>Region</th>
                 <th>SR</th>
                 <th>Elo</th>
@@ -29,6 +30,7 @@
                 <tr>
                     <td>{{ loop.index }}</td>
                     <td><a href="/team/{{ team.id }}">{{ team.name }}</a></td>
+                    <td>{{ team.university }}</td>
                     <td class="text-capitalize">{{ team.region }}</td>
                     <td>{{ team.average_sr|round|int }}</td>
                     <td class="font-weight-bold">{{ team.elo|round|int }}</td>

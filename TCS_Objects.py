@@ -73,8 +73,11 @@ class Team():
 
     def __str__(self):
         players = ""
-        for player in self.players:
-            players += "\t" + str(player) + "\n"
+        if self.players:
+            for player in self.players:
+                players += "\t" + str(player) + "\n"
+        else:
+            players = "No Players"
 
         return self.name + " (" + self.university + ")\n"\
                +" <" + self.url + ">\n" \
