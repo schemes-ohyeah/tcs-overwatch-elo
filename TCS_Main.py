@@ -7,10 +7,10 @@ def main() -> None:
 
     teams = TCS.read_teams_from_json(reset=True)
     matches = TCS.calculate_matches(teams)
-    # future_matches = TCS.predict_matches(teams)
+    future_matches = TCS.predict_matches(teams)
     TCS.write_tojson(teams, "teams.json")
     TCS.write_tojson(matches, "matches.json")
-    # TCS.write_tojson(future_matches, "future_matches.json")
+    TCS.write_tojson(future_matches, "future_matches.json")
 
 def scrape_teams_write_tojson() -> None:
     """

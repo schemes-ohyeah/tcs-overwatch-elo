@@ -1,5 +1,5 @@
 import json
-from typing import List, Dict
+from typing import Dict
 from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
