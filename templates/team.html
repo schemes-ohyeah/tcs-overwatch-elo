@@ -109,6 +109,7 @@
                     <th>Map</th>
                     <th>Result</th>
                     <th>New Elo</th>
+                    <th>Elo Change</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -125,9 +126,18 @@
                             <td>broke code tbh</td>
                         {% endif %}
 
-                        {# TODO Currently skipping index 0 which is the starting elo #}
-                        {# Maybe find a way to indicate this in the UI? #}
-                        <td>{{ match.elos[loop.index]|round(2) }}</td>
+                        {% set curr_elo = match.elos[loop.index] %}
+                        {% set prev_elo = match.elos[loop.index0] %}
+                        {% set diff = curr_elo - prev_elo %}
+                        <td>{{ curr_elo|round(2) }}</td>
+                        <td>
+                            {{ diff|round(2) }}
+                            {% if diff > 0 %}
+                            📈
+                            {% elif diff < 0 %}
+                            📉
+                            {% endif %}
+                        </td>
                     </tr>
                 {% endfor %}
                 </tbody>
