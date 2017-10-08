@@ -76,7 +76,7 @@ def search_page():
         name = team.name.lower()
         university = team.name.lower()
         # TODO Ability to search by abbreviation
-        abbreviation = None
+        abbreviation = ""
         search = " ".join([name, university, abbreviation])
         if query in search:
             results.append(team)
