@@ -99,7 +99,7 @@ def team_page(team_id):
     Displays known team data such as players, match history, and future
     matches. Pending feature to show summary of map choices (maps
     chosen when team loses) and best maps (just based on wins)
-    
+
     :param team_id:
     :return:
     """
