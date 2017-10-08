@@ -1,26 +1,32 @@
 from flask import Flask, render_template, request, jsonify
 from TCS_Functions import TCS_Functions as TCS
-from TCS_Objects import Match
+from TCS_Objects import Team, Match
+from typing import List
 
 app = Flask(__name__)
 GLOBAL_teams = TCS.read_teams_from_json(reset=False)
 GLOBAL_matches = TCS.read_matches_from_json()
 GLOBAL_future_matches = TCS.read_matches_from_json(future=True)
 
+
 @app.route("/")
 def index():
     return render_template("index.html")
 
+
 @app.route("/matches")
-def matches():
+def matches_json():
     global GLOBAL_matches
+
     matches = [GLOBAL_matches[key] for key in GLOBAL_matches]
     return jsonify([match.__dict__() for match in matches])
 
+
 @app.route("/rankings/<region>")
 @app.route("/rankings")
-def rankings(region=None):
+def rankings_page(region=None):
     global GLOBAL_teams
+
     teams = [GLOBAL_teams[key] for key in GLOBAL_teams]
     if region:
         teams = [team for team in teams if team.region == region]
@@ -38,8 +44,9 @@ def rankings(region=None):
                            region=region,
                            json_link=json_link)
 
+
 @app.route("/search")
-def search():
+def search_page():
     global GLOBAL_teams
     query = request.args.get("query").lower()
     teams = [GLOBAL_teams[key] for key in GLOBAL_teams]
@@ -57,55 +64,27 @@ def search():
                            query=query,
                            results=results)
 
-@app.route("/team/<id>")
-def team(id):
+
+@app.route("/team/<team_id>")
+def team_page(team_id):
     global GLOBAL_teams, GLOBAL_matches, GLOBAL_future_matches
-    team = GLOBAL_teams[int(id)]
-    matches = [GLOBAL_matches[match_id] for match_id in team.matches]
+
+    team = GLOBAL_teams[int(team_id)]
+    matches = [
+        GLOBAL_matches[match_id] for match_id in team.matches
+    ]
     my_matches = []
     elo_trend = [team.average_sr]
     for match in matches:
-        data = {}
-        if match.team_1id == team.id:
-            data["results"] = match.results
-            data["elos"] = match.team_1elos
-            data["opponent_elo"] = match.team_2elos[0]
-            data["opponent"] = GLOBAL_teams[match.team_2id].name
-            data["opponent_id"] = match.team_2id
-        elif match.team_2id == team.id:
-            # Matches store win result relative to team 1. Flip if this is team 2
-            data["results"] = [[-result[0], result[1]] for result in match.results]
-            data["elos"] = match.team_2elos
-            data["opponent_elo"] = match.team_1elos[0]
-            data["opponent"] = GLOBAL_teams[match.team_1id].name
-            data["opponent_id"] = match.team_1id
-        else:
-            print("something is wrong with team match finding")
-        data["url"] = match.url
-        elo_trend.extend(data["elos"][1:])
-
-        # Probably to win based on math from here
-        data["win_chance"] = Match.calculate_win_chance(data["elos"][0], data["opponent_elo"])
-
+        data = find_match_data(team, match, elo_trend)
         my_matches.append(data)
 
+    future_matches = [
+        GLOBAL_future_matches[match_id] for match_id in team.future_matches
+    ]
     my_future_matches = []
-    for match_id in team.future_matches:
-        future_match = GLOBAL_future_matches[match_id]
-        data = {}
-        if future_match.team_1id == team.id:
-            data["elo"] = future_match.team_1elos[0]
-            data["opponent_elo"] = future_match.team_2elos[0]
-            data["opponent"] = GLOBAL_teams[future_match.team_2id].name
-            data["opponent_id"] = future_match.team_2id
-        elif future_match.team_2id == team.id:
-            data["elo"] = future_match.team_2elos[0]
-            data["opponent_elo"] = future_match.team_1elos[0]
-            data["opponent"] = GLOBAL_teams[future_match.team_1id].name
-            data["opponent_id"] = future_match.team_1id
-        else:
-            print("something is wrong with the future match finding")
-        data["win_chance"] = Match.calculate_win_chance(data["elo"], data["opponent_elo"])
+    for future_match in future_matches:
+        data = find_future_match_data(team, future_match)
         my_future_matches.append(data)
 
     return render_template("team.html",
@@ -113,6 +92,60 @@ def team(id):
                            elo_trend=elo_trend,
                            matches=my_matches,
                            future_matches=my_future_matches)
+
+
+def find_match_data(team: Team, match: Match, elo_trend: List[int]):
+    global GLOBAL_teams
+
+    data = {}
+    if match.team_1id == team.id:
+        data["results"] = match.results
+        data["elos"] = match.team_1elos
+        data["opponent_elo"] = match.team_2elos[0]
+        data["opponent"] = GLOBAL_teams[match.team_2id].name
+        data["opponent_id"] = match.team_2id
+    elif match.team_2id == team.id:
+        # Matches store win result relative to team 1. Flip if this is team 2
+        data["results"] = [[-result[0], result[1]] for result in match.results]
+        data["elos"] = match.team_2elos
+        data["opponent_elo"] = match.team_1elos[0]
+        data["opponent"] = GLOBAL_teams[match.team_1id].name
+        data["opponent_id"] = match.team_1id
+    else:
+        print("something is wrong with team match finding")
+    data["url"] = match.url
+    elo_trend.extend(data["elos"][1:])
+
+    # Probably to win based on math from here
+    data["win_chance"] = Match.calculate_win_chance(
+        data["elos"][0], data["opponent_elo"]
+    )
+
+    return data
+
+
+def find_future_match_data(team: Team, future_match: Match):
+    global GLOBAL_teams
+
+    data = {}
+    if future_match.team_1id == team.id:
+        data["elo"] = future_match.team_1elos[0]
+        data["opponent_elo"] = future_match.team_2elos[0]
+        data["opponent"] = GLOBAL_teams[future_match.team_2id].name
+        data["opponent_id"] = future_match.team_2id
+    elif future_match.team_2id == team.id:
+        data["elo"] = future_match.team_2elos[0]
+        data["opponent_elo"] = future_match.team_1elos[0]
+        data["opponent"] = GLOBAL_teams[future_match.team_1id].name
+        data["opponent_id"] = future_match.team_1id
+    else:
+        print("something is wrong with the future match finding")
+    data["win_chance"] = Match.calculate_win_chance(
+        data["elo"], data["opponent_elo"]
+    )
+
+    return data
+
 
 if __name__ == "__main__":
     app.run()
