@@ -74,19 +74,18 @@ def search_page():
 
     for team in teams:
         name = team.name.lower()
-        university = team.name.lower()
+        university = team.university.lower()
         # TODO Ability to search by abbreviation
         abbreviation = ""
         search = " ".join([name, university, abbreviation])
         if query in search:
+            # Search for name, university, TODO Abbreviation
             results.append(team)
-            # Continue so we don't get a duplicate result if player found
-            continue
-
-        # Search for battle tag in team
-        for player in team.players:
-            if query in player.battle_tag.lower():
-                results.append(team)
+        else:
+            # Search for battle tag in team
+            for player in team.players:
+                if query in player.battle_tag.lower():
+                    results.append(team)
 
     return render_template("search.html",
                            query=query,
