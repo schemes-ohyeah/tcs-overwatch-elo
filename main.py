@@ -44,7 +44,7 @@ def rankings_page(region=None):
     # Sort by elo
     teams.sort(key=lambda x: x.elo, reverse=True)
 
-    # If ?json=[anything] return json page rather than html
+    # If `?json={anything}` return json page rather than html
     if request.args.get("json"):
         return jsonify([team.__dict__() for team in teams])
 
