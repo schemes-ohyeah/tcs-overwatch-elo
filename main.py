@@ -75,11 +75,11 @@ def search_page():
     for team in teams:
         name = team.name.lower()
         university = team.university.lower()
-        # TODO Ability to search by abbreviation
-        abbreviation = ""
+        abbreviation = get_abbreviation(team.university).lower()
+
         search = " ".join([name, university, abbreviation])
         if query in search:
-            # Search for name, university, TODO Abbreviation
+            # Search for name, university, abbreviation
             results.append(team)
         else:
             # Search for battle tag in team
@@ -215,6 +215,16 @@ def find_future_match_data(team: Team, future_match: Match):
 
     return data
 
+
+def get_abbreviation(text: str) -> str:
+    """
+    Takes in title cased university name and returns an abbreviation using
+    only the upper case letters
+
+    :param text:
+    :return: upper case abbreviation
+    """
+    return "".join(c for c in text if c.isupper())
 
 if __name__ == "__main__":
     app.run()
