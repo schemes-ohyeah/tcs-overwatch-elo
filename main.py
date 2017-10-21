@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, jsonify
 from TCS_Functions import TCS_Functions as TCS
 from TCS_Objects import Team, Match
 from typing import List
+import json
 
 app = Flask(__name__)
 GLOBAL_teams = TCS.read_teams_from_json(reset=False)
@@ -46,7 +47,8 @@ def rankings_page(region=None):
 
     # If `?json={anything}` return json page rather than html
     if request.args.get("json"):
-        return jsonify([team.__dict__() for team in teams])
+        # return jsonify([team.__dict__() for team in teams])
+        return json.dumps([team.__dict__() for team in teams])
 
     # Set json link to be displayed in html
     if region is None:
