@@ -99,8 +99,97 @@
                 .attr('fill', 'none');
         </script>
 
-        <!-- Matches -->
-        <h2>Matches</h2>
+        <script>
+            window.onload=function(){
+                var data = [-15, 20, -22, 18, -2, 6, -26, 18],
+                    duration = 300;
+
+                var margin = {top: 30, right: 10, bottom: 10, left: 30},
+                    width = 320 - margin.left - margin.right,
+                    height = 250 - margin.top - margin.bottom;
+
+                var y0 = Math.max(Math.abs(d3.min(data)), Math.abs(d3.max(data)));
+                var y = d3.scale.linear()
+                    .domain([-y0, y0])
+                    .range([height,0])
+                    .nice();
+
+                var x = d3.scale.ordinal()
+                    .domain(d3.range(data.length * 2))
+                    .rangeRoundBands([0, width], .1);
+
+                var yAxis = d3.svg.axis()
+                    .scale(y)
+                    .orient("left");
+
+                var svg = d3.select("body").append("svg")
+                    .attr("width", width + margin.left + margin.right)
+                    .attr("height", height + margin.top + margin.bottom)
+                    .append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                svg.selectAll("rect")
+                    .data(data)
+                    .enter().append("rect")
+                    .attr("class", function(d) { return d < 0 ? "bar negative" : "bar positive"; })
+                    .attr("y", function(d) { return y(0); })
+                    .attr("x", function(d, i) {
+                        if (d < 0) { return x(i)/2; }
+                        else { return x(i-1)/2; }
+                    })
+                    .attr("width", x.rangeBand())
+                    .attr("height", 0)
+                    .transition().delay(function (d,i){
+                    if (d < 0) { return i * duration + data.length * duration; }
+                    else {return i * duration;}
+                })
+                    .duration(duration)
+                    .attr("height", function(d) { return Math.abs(y(d) - y(0)); })
+                    .attr("y", function(d) { return y(Math.max(0, d)); });
+
+                svg.append("g")
+                    .attr("class", "y axis")
+                    .call(yAxis);
+
+                svg.append("g")
+                    .attr("class", "x axis")
+                    .append("line")
+                    .attr("y1", y(0))
+                    .attr("y2", y(0))
+                    .attr("x1", 0)
+                    .attr("x2", width);
+            }
+        </script>
+
+        <!-- Map Summary -->
+        <h1>Map Summary</h1>
+        <table class="table table-sm">
+            <thead>
+            <tr>
+                <th>Map</th>
+                <th>Win</th>
+                <th>Lose</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for result in map_data %}
+                <tr>
+                    <td>{{ result }}</td>
+                    <td>{{ map_data[result].win }}</td>
+                    <td>{{ map_data[result].lose }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Future Matches -->
+        <h2>Future Matches</h2>
+        {% for match in future_matches %}
+            <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</p>
+        {% endfor %}
+
+        <!-- Previous Matches -->
+        <h2>Previous Matches</h2>
         {% for match in matches %}
             <h5>Match {{ loop.index }} against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</h5>
             <table class="table table-sm">
@@ -133,21 +222,15 @@
                         <td>
                             {{ diff|round(2) }}
                             {% if diff > 0 %}
-                            📈
+                                📈
                             {% elif diff < 0 %}
-                            📉
+                                📉
                             {% endif %}
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
             </table>
-        {% endfor %}
-
-        <!-- Future Matches -->
-        <h2>Future Matches</h2>
-        {% for match in future_matches %}
-            <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</p>
         {% endfor %}
     </div>
 {% endblock %}

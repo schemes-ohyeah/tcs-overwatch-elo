@@ -3,6 +3,7 @@ from TCS_Functions import TCS_Functions as TCS
 from TCS_Objects import Team, Match
 from typing import List
 import json
+from operator import itemgetter
 
 app = Flask(__name__)
 GLOBAL_teams = TCS.read_teams_from_json(reset=False)
@@ -121,7 +122,15 @@ def team_page(team_id):
     map_results = []
     for data in my_matches:
         map_results.extend(data["results"])
-    map_data = find_map_data(map_results)
+
+    # Makes a map summary of best to worst maps
+    map_data = []
+    for s in sorted(
+            find_map_data(map_results).items(),
+            key=lambda k_v: k_v[1]["win"],
+            reverse=True):
+        map_data.append(s)
+    map_data = dict(map_data)
 
     future_matches = [
         GLOBAL_future_matches[match_id] for match_id in team.future_matches
