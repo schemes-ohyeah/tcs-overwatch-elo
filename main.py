@@ -116,6 +116,10 @@ def team_page(team_id):
     for match in matches:
         data = find_match_data(team, match, elo_trend)
         my_matches.append(data)
+    map_results = []
+    for data in my_matches:
+        map_results.extend(data["results"])
+    map_data = find_map_data(map_results)
 
     future_matches = [
         GLOBAL_future_matches[match_id] for match_id in team.future_matches
@@ -129,6 +133,7 @@ def team_page(team_id):
     return render_template("team.html",
                            team=team,
                            elo_trend=elo_trend,
+                           map_data=map_data,
                            matches=my_matches,
                            future_matches=my_future_matches)
 
@@ -213,6 +218,29 @@ def find_future_match_data(team: Team, future_match: Match):
         data["elo"], data["opponent_elo"]
     )
 
+    return data
+
+
+def find_map_data(map_results):
+    NAME = 1
+    RESULT = 0
+    data = {}
+    for result in map_results:
+        if result[NAME] not in data:
+            data[result[NAME]] = {
+                "win" : 0,
+                "lose" : 0
+            }
+        if result[RESULT] == 1:
+            data[result[NAME]]["win"] += 1
+        elif result[RESULT] == -1:
+            data[result[NAME]]["lose"] += 1
+        else:
+            # Draws do not appear to be recorded by Tespa, they will
+            # play a tie breaker and winner of that map will be recorded
+            # as the winner for the original map, tie breaker map is
+            # not recorded
+            pass
     return data
 
 
