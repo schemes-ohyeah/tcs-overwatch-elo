@@ -3,7 +3,7 @@ from typing import Dict
 from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
-CURRENT_ROUND = 6
+CURRENT_ROUND = 8
 
 class TCS_Functions():
     @staticmethod
