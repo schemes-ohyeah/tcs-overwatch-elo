@@ -185,13 +185,14 @@
         <!-- Future Matches -->
         <h2>Future Matches</h2>
         {% for match in future_matches %}
-            <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</p>
+            <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win (<a href="{{ match.url }}">{{ match.url }}</a>)</p>
         {% endfor %}
 
         <!-- Previous Matches -->
         <h2>Previous Matches</h2>
         {% for match in matches %}
             <h5>Match {{ loop.index }} against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</h5>
+            <a href="{{ match.url }}">{{ match.url }}</a>
             <table class="table table-sm">
                 <thead>
                 <tr>

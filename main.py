@@ -185,7 +185,6 @@ def find_match_data(team: Team, match: Match, elo_trend: List[int]):
         data["opponent_id"] = match.team_1id
     else:
         print("something is wrong with team match finding")
-    # TODO Display url to frontend
     data["url"] = match.url
     elo_trend.extend(data["elos"][1:])
 
@@ -225,6 +224,7 @@ def find_future_match_data(team: Team, future_match: Match):
         data["opponent_id"] = future_match.team_1id
     else:
         print("something is wrong with the future match finding")
+    data["url"] = future_match.url
     data["win_chance"] = Match.calculate_win_chance(
         data["elo"], data["opponent_elo"]
     )
