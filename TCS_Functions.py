@@ -3,7 +3,7 @@ from typing import Dict
 from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
-CURRENT_ROUND = 8
+CURRENT_ROUND = 10
 
 class TCS_Functions():
     @staticmethod
@@ -199,6 +199,7 @@ class TCS_Functions():
     def read_matches_from_json(future=False) -> Dict[int, Match]:
         filename = "static/json/"
         if future:
+            return {}
             filename += "future_matches.json"
         else:
             filename += "matches.json"
