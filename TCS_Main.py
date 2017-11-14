@@ -1,5 +1,5 @@
 import pickle
-from TCS_Functions import TCS_Functions as TCS
+import TCS_Functions as TCS
 from TCS_Scraper import TCS_Scraper
 from typing import Dict
 

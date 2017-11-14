@@ -1,9 +1,8 @@
-from flask import Flask, render_template, request, jsonify
-from TCS_Functions import TCS_Functions as TCS
+from flask import Flask, render_template, request
+import TCS_Functions as TCS
 from TCS_Objects import Team, Match
 from typing import List
 import json
-from operator import itemgetter
 
 app = Flask(__name__)
 GLOBAL_teams = TCS.read_teams_from_json(reset=False)
