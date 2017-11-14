@@ -3,7 +3,7 @@ from TCS_Functions import TCS_Functions as TCS
 def main() -> None:
     # Uncomment the following line to scrape
     # Warning: takes a while
-    #scrape_teams_write_tojson()
+    # scrape_teams_write_tojson()
 
     teams = TCS.read_teams_from_json(reset=True)
     matches = TCS.calculate_matches(teams)
