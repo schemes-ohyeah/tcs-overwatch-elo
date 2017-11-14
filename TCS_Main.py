@@ -1,6 +1,7 @@
 import pickle
 from TCS_Functions import TCS_Functions as TCS
 from TCS_Scraper import TCS_Scraper
+from typing import Dict
 
 def main() -> None:
     # Uncomment the following line to scrape
@@ -9,24 +10,29 @@ def main() -> None:
 
     teams = TCS.read_teams_from_json(reset=True)
 
+    # Updates regional_matches.json - this should not be touched since
+    # this section of the tourney is over
+    # update_regionals(teams)
+
     # Looks up team ids from national swiss and matches them to team ids
     # from regional bracket, caching to a pickle
     # TCS.get_swiss_ids(teams)
 
-    # Updates regional_matches.json - this should not be touched since
-    # this section of the tourney is over
-    update_regionals(teams)
+    swiss_ids = read_swiss_ids()
 
-    # Updates swiss_matches.json
-    update_swiss(teams)
+    # NYU
+    swiss_ids[18451] = 15360
+    print(teams[15360].name, "changed to NYU Ultraviolets")
+    teams[15360].name = "NYU Ultraviolets"
 
-    # match_urls = TCS_Scraper.scrape_matches(
-    #     start_round=11,
-    #     end_round=14,
-    #     future=True
-    # )
-    # future_matches = None#TCS.predict_matches(teams)
-    # TCS.write_tojson(future_matches, "future_matches.json")
+    # UIC
+    swiss_ids[18450] = 15341
+    print(teams[15341].name, "changed to We're Boosted")
+    teams[15341].name = "We're Boosted"
+
+    update_swiss(teams, swiss_ids)
+
+    update_future(teams, swiss_ids)
 
 def scrape_teams_write_tojson() -> None:
     """
@@ -40,7 +46,7 @@ def scrape_teams_write_tojson() -> None:
     # Save this data to a json file named teams.json
     TCS.write_tojson(teams, "teams.json")
 
-def read_swiss_ids() -> None:
+def read_swiss_ids() -> Dict[int, int]:
     with open("static/swiss_ids.pkl", "rb") as f:
         return pickle.load(f)
 
@@ -50,21 +56,17 @@ def update_regionals(teams) -> None:
     TCS.write_tojson(teams, "teams.json")
     TCS.write_tojson(regional_matches, "regional_matches.json")
 
-def update_swiss(teams) -> None:
-    swiss_ids = read_swiss_ids()
-    # NYU
-    swiss_ids[18451] = 15360
-    print(teams[15360].name, "changed to NYU Ultraviolets")
-    teams[15360].name = "NYU Ultraviolets"
-
-    # UIC
-    swiss_ids[18450] = 15341
-    print(teams[15341].name, "changed to We're Boosted")
-    teams[15341].name = "We're Boosted"
-
+def update_swiss(teams, swiss_ids) -> None:
     match_urls = TCS_Scraper.scrape_swiss_matches()
     swiss_matches = TCS.calculate_matches(match_urls, teams, lut=swiss_ids)
     TCS.write_tojson(swiss_matches, "swiss_matches.json")
+    TCS.write_tojson(teams, "teams_stage2.json")
+
+def update_future(teams, swiss_ids) -> None:
+    # Round is 0 indexed
+    match_urls = TCS_Scraper.scrape_doom_matches(round=0)
+    future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
+    TCS.write_tojson(future_matches, "future_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
 
 main()

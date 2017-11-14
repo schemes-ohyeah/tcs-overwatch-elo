@@ -147,11 +147,11 @@ class TCS_Functions():
         return matches
 
     @staticmethod
-    def predict_matches(match_urls: List[str], teams: Dict[int, Team]):
+    def predict_matches(match_urls: List[str], teams: Dict[int, Team], lut=None) -> Dict[int, Match]:
         matches = {}
         for match in match_urls:
             print("Scraping", match)
-            team_1id, team_2id = TCS_Scraper.scrape_future_match(match, teams)
+            team_1id, team_2id = TCS_Scraper.scrape_future_match(match, teams, lut)
             # If there are not 2 teams in this match, skip
             if not (team_1id and team_2id):
                 continue
@@ -173,7 +173,7 @@ class TCS_Functions():
         return matches
 
     @staticmethod
-    def write_tojson(data, filename) -> None:
+    def write_tojson(data, filename: str) -> None:
         """
         Takes a dict of objects and writes them to a json file
 
@@ -196,18 +196,14 @@ class TCS_Functions():
         :return:
         """
         filename = "static/json/"
-        if reset:
-            filename += "teams.json"
-        else:
-            filename += "teams_stage2.json"
-        with open(filename, "r") as file:
-            data = json.load(file)
+        with open(filename + "teams.json", "r") as file:
+            data1 = json.load(file)
 
-        teams = []
-        for team in data:
+        teams1 = []
+        for team in data1:
             players = [Player(player["battle_tag"], player["skill_rating"])
                        for player in team["players"]]
-            teams.append(
+            teams1.append(
                 Team(
                     team["url"],
                     team["region"],
@@ -215,16 +211,42 @@ class TCS_Functions():
                     team["university"],
                     players,
                     team["average_sr"],
-                    team["average_sr"] if reset else team["elo"],
-                    None if reset else team["matches"],
-                    None if reset else team["future_matches"]
-                )
-            )
+                    team["average_sr"],
+                    team["matches"],
+                    None
+                ))
 
         team_dict = {}
-        for team in teams:
+        for team in teams1:
             team_dict[team.id] = team
 
+        if reset:
+            return team_dict
+
+        with open(filename + "teams_stage2.json") as file:
+            data2 = json.load(file)
+
+        teams2 = []
+        for team in data2:
+            players = [Player(player["battle_tag"], player["skill_rating"])
+                       for player in team["players"]]
+            new_team = Team(
+                    team["url"],
+                    team["region"],
+                    team["name"],
+                    team["university"],
+                    players,
+                    team["average_sr"],
+                    team["elo"],
+                    team["matches"],
+                    team["future_matches"]
+                )
+
+            teams2.append(new_team)
+
+        team_dict = {}
+        for team in teams2:
+            team_dict[team.id] = team
         return team_dict
 
     @staticmethod

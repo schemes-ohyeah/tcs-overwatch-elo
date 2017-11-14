@@ -48,7 +48,7 @@ class TCS_Scraper(Scraper):
         return details[len(details) - 1].text
 
     @staticmethod
-    def scrape_future_match(url, teams) -> (int, int):
+    def scrape_future_match(url: str, teams, lut: Dict[int, int]=None) -> (int, int):
         """
         Returns two team ids in the matchup
 
@@ -63,13 +63,22 @@ class TCS_Scraper(Scraper):
         team_2url = team_2url.get("href") if team_2url else None
 
         if team_1url and team_2url:
+
             team_1id = int(team_1url.split("/")[-1])
             team_2id = int(team_2url.split("/")[-1])
+
+            # Nationals stage, teams have different IDs. For that, a look up
+            # table is passed in to match to original id
+            if lut:
+                team_1id = lut[team_1id]
+                team_2id = lut[team_2id]
+
             return team_1id, team_2id
         return None, None
 
+
     @staticmethod
-    def scrape_match(url, teams, lut=None) -> (int, List[List[int]], int):
+    def scrape_match(url: str, teams, lut: Dict[int, int]=None) -> (int, List[List[int]], int):
         """
         Returns the team ids and list of results relative to team 1 where
         results is a list of ints in index 0
@@ -132,7 +141,24 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_swiss_matches():
+    def scrape_doom_matches(round: int) -> List[str]:
+        base_url = "https://compete.tespa.org/tournament/90/phase/2"
+        soup = Scraper.get_soup(base_url)
+        bracket = soup.find("div", {"class" : "brackets searchables"})
+        paths = bracket.find_all("div", {"class" : "row bracket-group"})
+
+        matches = []
+        for path in paths:
+            # for each round in this path
+            for x in range(round + 1):
+                match_url = path.find("div", {"class" : "r" + str(x)}).find("a").get("href")
+                matches.append(match_url)
+
+        return matches
+
+
+    @staticmethod
+    def scrape_swiss_matches() -> List[str]:
         base_url = "https://compete.tespa.org/tournament/90/phase/1/group/1"
         soup = Scraper.get_soup(base_url)
         return scrape_matches(soup, start_round=11, end_round=14)
@@ -157,7 +183,7 @@ class TCS_Scraper(Scraper):
 
         return matches
 
-def scrape_matches(soup, start_round: int, end_round: int, future: bool=False):
+def scrape_matches(soup, start_round: int, end_round: int, future: bool=False) -> List[str]:
     matches = []
     for x in range(start_round, end_round + 1):
         print("Looking for matches in round", x)

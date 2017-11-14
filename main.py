@@ -9,7 +9,7 @@ app = Flask(__name__)
 GLOBAL_teams = TCS.read_teams_from_json(reset=False)
 GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
 GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
-GLOBAL_future_matches = None#TCS.read_matches_from_json("future_matches.json")
+GLOBAL_future_matches = TCS.read_matches_from_json("future_matches.json")
 
 
 @app.route("/")
