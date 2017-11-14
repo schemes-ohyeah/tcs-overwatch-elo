@@ -64,7 +64,7 @@ def update_swiss(teams, swiss_ids) -> None:
 
 def update_future(teams, swiss_ids) -> None:
     # Round is 0 indexed
-    match_urls = TCS_Scraper.scrape_doom_matches(round=0)
+    match_urls = TCS_Scraper.scrape_doom_matches(round=3)
     future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
     TCS.write_tojson(future_matches, "future_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
