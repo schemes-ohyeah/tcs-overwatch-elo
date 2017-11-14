@@ -16,6 +16,11 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/doom")
+def doom():
+    return render_template("doom.html")
+
+
 @app.route("/matches")
 def matches_json():
     """

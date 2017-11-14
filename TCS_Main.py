@@ -19,7 +19,7 @@ def scrape_teams_write_tojson() -> None:
 
     :return:
     """
-    # Create a dictionary  of Team objects by scraping TCS and Overbuff
+    # Create a dictionary of Team objects by scraping TCS and Overbuff
     teams = TCS.get_teams()
     # Save this data to a json file named teams.json
     TCS.write_tojson(teams, "teams.json")
