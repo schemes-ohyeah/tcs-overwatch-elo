@@ -1,11 +1,39 @@
-import json
-from typing import Dict
+import json, pickle
+from typing import Dict, List
 from TCS_Objects import Team, Player, Match
 from TCS_Scraper import TCS_Scraper
 
 CURRENT_ROUND = 10
 
 class TCS_Functions():
+    @staticmethod
+    def get_swiss_ids(teams: Dict[int, Team]) -> None:
+        soup = TCS_Scraper.get_soup("https://compete.tespa.org/tournament/90/phase/1")
+        table = soup.find("table", {"class" : "table table-hover table-bordered"})
+        rows = table.find_all("tr")[1:]
+
+        swiss_teams = {}
+
+        for row in rows:
+            tag = row.find("a")
+
+            name = tag.text.strip()
+            url = tag.get("href")
+            id = int(url.split("/")[-1])
+            swiss_teams[name] = id
+
+        id_pair = {}
+        for team_id in teams:
+            team = teams[team_id]
+            if team.name in swiss_teams:
+                id_pair[swiss_teams[team.name]] = team.id
+                print("\tfound", team.name)
+            else:
+                print(team.name, "not found")
+
+        with open("static/swiss_ids.pkl", "wb") as f:
+            pickle.dump(id_pair, f, pickle.HIGHEST_PROTOCOL)
+
     @staticmethod
     def get_teams() -> Dict[int, Team]:
         """
@@ -59,23 +87,27 @@ class TCS_Functions():
         return team_dict
 
     @staticmethod
-    def calculate_matches(teams: Dict[int, Team]) -> Dict[int, Match]:
+    def calculate_matches(
+            match_urls: List[str], teams: Dict[int, Team], lut: Dict[int, int]=None)\
+            -> Dict[int, Match]:
         """
         Goes through all matches and calculates new elo for teams with each
         map causing a new elo shift, rather than an overall bo3 / bo5
 
+        :param match_urls:
         :param teams:
+        :param lut: look up table for swiss ids
         :return:
         """
-        match_urls = TCS_Scraper.scrape_matches(end_round=CURRENT_ROUND)
         matches = {}
         for match in match_urls:
             print("Scraping", match)
             team_1id, results, team_2id \
-                = TCS_Scraper.scrape_match(match, teams)
+                = TCS_Scraper.scrape_match(match, teams, lut=lut)
             # If nothing happened on this match page, skip it
             if not results:
                 continue
+
             team_1 = teams[team_1id]
             team_2 = teams[team_2id]
 
@@ -115,12 +147,7 @@ class TCS_Functions():
         return matches
 
     @staticmethod
-    def predict_matches(teams: Dict[int, Team]):
-        match_urls = TCS_Scraper.scrape_matches(
-            start_round=CURRENT_ROUND + 1,
-            end_round=CURRENT_ROUND + 2,
-            future=True
-        )
+    def predict_matches(match_urls: List[str], teams: Dict[int, Team]):
         matches = {}
         for match in match_urls:
             print("Scraping", match)
@@ -199,10 +226,10 @@ class TCS_Functions():
     def read_matches_from_json(future=False) -> Dict[int, Match]:
         filename = "static/json/"
         if future:
-            return {}
             filename += "future_matches.json"
+            return {}
         else:
-            filename += "matches.json"
+            filename += "regional_matches.json"
         with open(filename, "r") as file:
             data = json.load(file)
 

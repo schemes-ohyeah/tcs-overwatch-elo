@@ -69,7 +69,7 @@ class TCS_Scraper(Scraper):
         return None, None
 
     @staticmethod
-    def scrape_match(url, teams) -> (int, List[List[int]], int):
+    def scrape_match(url, teams, lut=None) -> (int, List[List[int]], int):
         """
         Returns the team ids and list of results relative to team 1 where
         results is a list of ints in index 0
@@ -92,6 +92,18 @@ class TCS_Scraper(Scraper):
             # Get the team id and find the team object from the dict of teams
             team_1id = int(team_1url.split("/")[-1])
             team_2id = int(team_2url.split("/")[-1])
+
+            # Nationals stage, teams have different IDs. For that, a look up
+            # table is passed in to match to original id
+            if lut:
+                try:
+                    team_1id = lut[team_1id]
+                    team_2id = lut[team_2id]
+                except KeyError:
+                    print("Key error for either " + str(team_1id) + " " + str(team_2id) + ". Probably a filler Tespa team")
+                    # Probably a filler tespa team
+                    return [None, None, None]
+
             team_1 = teams[team_1id]
             team_2 = teams[team_2id]
 
@@ -120,7 +132,13 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_matches(end_round: int, start_round: int=1, future=False) -> List[str]:
+    def scrape_swiss_matches():
+        base_url = "https://compete.tespa.org/tournament/90/phase/1/group/1"
+        soup = Scraper.get_soup(base_url)
+        return scrape_matches(soup, start_round=11, end_round=14)
+
+    @staticmethod
+    def scrape_regional_matches(end_round: int, start_round: int=1) -> List[str]:
         """
         Gets a list of all matches by visiting each region's individual page
 
@@ -134,30 +152,37 @@ class TCS_Scraper(Scraper):
             url = base_url + str(x)
             soup = Scraper.get_soup(url)
             # for each round up to the specific round in parameter, inclusive
-            for x in range(start_round, end_round + 1):
-                print("Looking for matches in round", x)
-                round_soup = soup.find("div", {"id" : "collapseRound" + str(x)})
-                matchups = round_soup.find_all("table",
-                                               {"class" : "table margin-top margin-bottom panel"})
-
-                if future:
-                    # If future round do not verify if it has taken place
-                    for matchup in matchups:
-                        match_url = matchup.find("a").get("href")
-                        matches.append(match_url)
-                else:
-                    # Otherwise, make sure the game has been played by making
-                    # sure the total score is more than 0
-                    for matchup in matchups:
-                        # Check that something has happened in this matchup
-                        # eg no forfeit or empty score
-                        scores = matchup.find_all("div", {"class" : "pull-right"})
-                        score1 = scores[0].text.strip()
-                        score1 = int(score1) if score1.isdigit() else 0
-                        score2 = scores[1].text.strip()
-                        score2 = int(score2) if score2.isdigit() else 0
-                        if score1 + score2 > 0:
-                            match_url = matchup.find("a").get("href")
-                            matches.append(match_url)
+            matches.extend(
+                scrape_matches(soup, start_round, end_round))
 
         return matches
+
+def scrape_matches(soup, start_round: int, end_round: int, future: bool=False):
+    matches = []
+    for x in range(start_round, end_round + 1):
+        print("Looking for matches in round", x)
+        round_soup = soup.find("div", {"id": "collapseRound" + str(x)})
+        matchups = round_soup.find_all("table",
+                                       {"class": "table margin-top margin-bottom panel"})
+
+        if future:
+            # If future round do not verify if it has taken place
+            for matchup in matchups:
+                match_url = matchup.find("a").get("href")
+                matches.append(match_url)
+        else:
+            # Otherwise, make sure the game has been played by making
+            # sure the total score is more than 0
+            for matchup in matchups:
+                # Check that something has happened in this matchup
+                # eg no forfeit or empty score
+                scores = matchup.find_all("div", {"class": "pull-right"})
+                score1 = scores[0].text.strip()
+                score1 = int(score1) if score1.isdigit() else 0
+                score2 = scores[1].text.strip()
+                score2 = int(score2) if score2.isdigit() else 0
+                if score1 + score2 > 0:
+                    match_url = matchup.find("a").get("href")
+                    matches.append(match_url)
+
+    return matches
