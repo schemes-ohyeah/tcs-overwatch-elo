@@ -188,9 +188,58 @@
             <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win (<a href="{{ match.url }}">{{ match.url }}</a>)</p>
         {% endfor %}
 
-        <!-- Previous Matches -->
-        <h2>Previous Matches</h2>
-        {% for match in matches %}
+        <!-- Swiss matches -->
+        {% if swiss_matches %}
+            <h2>Swiss Matches</h2>
+            {% for match in swiss_matches %}
+                <h5>Match {{ loop.index }} against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</h5>
+                <a href="{{ match.url }}">{{ match.url }}</a>
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Map</th>
+                        <th>Result</th>
+                        <th>New Elo</th>
+                        <th>Elo Change</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for result in match.results %}
+                        <tr>
+                            <td>{{ result[1] }}</td>
+                            {% if result[0] == 1 %}
+                                <td>Win</td>
+                            {% elif result[0] == 0 %}
+                                <td>Draw</td>
+                            {% elif result[0] == -1 %}
+                                <td>Lose</td>
+                            {% else %}
+                                <td>broken code tbh</td>
+                            {% endif %}
+
+                            {% set curr_elo = match.elos[loop.index] %}
+                            {% set prev_elo = match.elos[loop.index0] %}
+                            {% set diff = curr_elo - prev_elo %}
+                            <td>{{ curr_elo|round(2) }}</td>
+                            <td>
+                                {{ diff|round(2) }}
+                                {% if diff > 0 %}
+                                    📈
+                                {% elif diff < 0 %}
+                                    📉
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        {% endif %}
+
+
+        <!-- Regional Matches -->
+        <h2>Regional Matches</h2>
+        {% for match in regional_matches %}
             <h5>Match {{ loop.index }} against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</h5>
             <a href="{{ match.url }}">{{ match.url }}</a>
             <table class="table table-sm">
@@ -213,7 +262,7 @@
                         {% elif result[0] == -1 %}
                             <td>Lose</td>
                         {% else %}
-                            <td>broke code tbh</td>
+                            <td>broken code tbh</td>
                         {% endif %}
 
                         {% set curr_elo = match.elos[loop.index] %}

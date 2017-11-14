@@ -195,7 +195,12 @@ class TCS_Functions():
 
         :return:
         """
-        with open("static/json/teams.json", "r") as file:
+        filename = "static/json/"
+        if reset:
+            filename += "teams.json"
+        else:
+            filename += "teams_stage2.json"
+        with open(filename, "r") as file:
             data = json.load(file)
 
         teams = []
@@ -223,14 +228,9 @@ class TCS_Functions():
         return team_dict
 
     @staticmethod
-    def read_matches_from_json(future=False) -> Dict[int, Match]:
-        filename = "static/json/"
-        if future:
-            filename += "future_matches.json"
-            return {}
-        else:
-            filename += "regional_matches.json"
-        with open(filename, "r") as file:
+    def read_matches_from_json(filename: str) -> Dict[int, Match]:
+        base = "static/json/"
+        with open(base + filename, "r") as file:
             data = json.load(file)
 
         matches = []

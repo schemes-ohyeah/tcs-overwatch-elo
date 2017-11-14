@@ -7,8 +7,9 @@ from operator import itemgetter
 
 app = Flask(__name__)
 GLOBAL_teams = TCS.read_teams_from_json(reset=False)
-GLOBAL_matches = TCS.read_matches_from_json()
-GLOBAL_future_matches = TCS.read_matches_from_json(future=True)
+GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
+GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
+GLOBAL_future_matches = None#TCS.read_matches_from_json("future_matches.json")
 
 
 @app.route("/")
@@ -19,18 +20,6 @@ def index():
 @app.route("/doom")
 def doom():
     return render_template("doom.html")
-
-
-@app.route("/matches")
-def matches_json():
-    """
-    Returns a json for all matches. Currently not publicly findable.
-    :return:
-    """
-    global GLOBAL_matches
-
-    matches = [GLOBAL_matches[key] for key in GLOBAL_matches]
-    return jsonify([match.__dict__() for match in matches])
 
 
 @app.route("/rankings/<region>")
@@ -110,23 +99,40 @@ def team_page(team_id):
     :param team_id:
     :return:
     """
-    global GLOBAL_teams, GLOBAL_matches, GLOBAL_future_matches
+    global GLOBAL_teams,\
+        GLOBAL_regional_matches,\
+        GLOBAL_swiss_matches, \
+        GLOBAL_future_matches
 
     team = GLOBAL_teams[int(team_id)]
-    matches = [
-        GLOBAL_matches[match_id] for match_id in team.matches
-    ]
+    regional_matches = []
+    swiss_matches = []
+    for match_id in team.matches:
+        if match_id in GLOBAL_regional_matches:
+            regional_matches.append(
+                GLOBAL_regional_matches[match_id])
+        else:
+            swiss_matches.append(
+                GLOBAL_swiss_matches[match_id])
 
-    my_matches = []
+    my_regional_matches = []
     # Init elo trend as team.average_sr as first item, will add more later
     elo_trend = [team.average_sr]
     # Refer to find_match_data doc to see what is returned in data
-    for match in matches:
+    for match in regional_matches:
         data = find_match_data(team, match, elo_trend)
-        my_matches.append(data)
+        my_regional_matches.append(data)
     map_results = []
-    for data in my_matches:
+    for data in my_regional_matches:
         map_results.extend(data["results"])
+
+    my_swiss_matches = []
+    if swiss_matches:
+        for match in swiss_matches:
+            data = find_match_data(team, match, elo_trend)
+            my_swiss_matches.append(data)
+        for data in my_swiss_matches:
+            map_results.extend(data["results"])
 
     # Makes a map summary of best to worst maps
     map_data = []
@@ -150,7 +156,8 @@ def team_page(team_id):
                            team=team,
                            elo_trend=elo_trend,
                            map_data=map_data,
-                           matches=my_matches,
+                           regional_matches=my_regional_matches,
+                           swiss_matches=my_swiss_matches,
                            future_matches=my_future_matches)
 
 
