@@ -64,8 +64,23 @@ def update_swiss(teams, swiss_ids) -> None:
 
 def update_future(teams, swiss_ids) -> None:
     # Round is 0 indexed
-    match_urls = TCS_Scraper.scrape_doom_matches(round=3)
+    doom_matches_urls = TCS_Scraper.scrape_doom_matches(round=3)
+
+    match_urls = []
+    for url_list in doom_matches_urls:
+        match_urls.extend(url_list)
     future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
+
+    doom_matches = []
+    for url_list in doom_matches_urls:
+        doom_path = []
+        for url in url_list:
+            url_id = int(url.split("/")[-1])
+            doom_path.append(future_matches[url_id])
+        doom_matches.append(doom_path)
+
+    with open("static/doom_matches.pkl", "wb") as f:
+        pickle.dump(doom_matches, f, pickle.HIGHEST_PROTOCOL)
     TCS.write_tojson(future_matches, "future_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
 

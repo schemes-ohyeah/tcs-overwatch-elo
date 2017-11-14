@@ -2,13 +2,13 @@ from flask import Flask, render_template, request
 import TCS_Functions as TCS
 from TCS_Objects import Team, Match
 from typing import List
-import json
+import json, pickle
 
 app = Flask(__name__)
-GLOBAL_teams = TCS.read_teams_from_json(reset=False)
-GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
-GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
-GLOBAL_future_matches = TCS.read_matches_from_json("future_matches.json")
+# GLOBAL_teams = TCS.read_teams_from_json(reset=False)
+# GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
+# GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
+# GLOBAL_future_matches = TCS.read_matches_from_json("future_matches.json")
 
 
 @app.route("/")
@@ -18,7 +18,13 @@ def index():
 
 @app.route("/doom")
 def doom():
-    return render_template("doom.html")
+    with open("static/doom_matches.pkl", "rb") as file:
+        doom_matches = pickle.load(file)
+
+    for doom_path in doom_matches:
+        for match in doom_path:
+            print(match.__dict__())
+    return render_template("doom.html", doom_matches=doom_matches)
 
 
 @app.route("/rankings/<region>")

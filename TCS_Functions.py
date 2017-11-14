@@ -152,22 +152,34 @@ def predict_matches(match_urls: List[str], teams: Dict[int, Team], lut=None) -> 
         print("Scraping", match)
         team_1id, team_2id = TCS_Scraper.scrape_future_match(match, teams, lut)
         # If there are not 2 teams in this match, skip
-        if not (team_1id and team_2id):
-            continue
-        team_1 = teams[team_1id]
-        team_2 = teams[team_2id]
-        new_match = Match(
-            match,
-            team_1id,
-            team_2id,
-            [team_1.elo],
-            [team_2.elo],
-        )
+        # if not (team_1id and team_2id):
+        #     continue
+        team_1 = teams[team_1id] if team_1id in teams else None
+        team_2 = teams[team_2id] if team_2id in teams else None
+
+        if not team_2:
+            new_match = Match(
+                match,
+                team_1id,
+                team_2id,
+                [team_1.elo],
+                [0]
+            )
+        else:
+            new_match = Match(
+                match,
+                team_1id,
+                team_2id,
+                [team_1.elo],
+                [team_2.elo],
+            )
         matches[new_match.id] = new_match
 
         # Add future match ids to each team object
         team_1.future_matches.append(new_match.id)
-        team_2.future_matches.append(new_match.id)
+
+        if team_2:
+            team_2.future_matches.append(new_match.id)
 
     return matches
 

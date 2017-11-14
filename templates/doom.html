@@ -49,6 +49,26 @@
         <p>Teams are displayed with their respective Elo scores and probability of winning listed in large bold numbers.</p>
     </div>
     <div class="container-fluid doom">
+        {% for path in doom_matches %}
+            <div class="row">
+                {% for match in path %}
+                    <div>
+                        <div>
+                            <h1>0</h1>
+                            <a href="/team/{{ match.team_1id }}">Team 1</a>
+                            <em>{{ match.team_1elos[0] }}</em>
+                        </div>
+                        <div>
+                            <h1>0</h1>
+                            <a href="/team/{{ match.team_2id }}">Team 2</a>
+                            <em>{{ match.team_2elos[0] }}</em>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+
         <!-- Row 1 -->
         <div class="row">
             <div>

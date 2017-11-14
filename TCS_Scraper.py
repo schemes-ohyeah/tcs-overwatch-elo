@@ -62,19 +62,16 @@ class TCS_Scraper(Scraper):
         team_2url = soup.find("div", {"id" : "player2Container"}).find("a")
         team_2url = team_2url.get("href") if team_2url else None
 
-        if team_1url and team_2url:
+        team_1id = int(team_1url.split("/")[-1]) if team_1url else None
+        team_2id = int(team_2url.split("/")[-1]) if team_2url else None
 
-            team_1id = int(team_1url.split("/")[-1])
-            team_2id = int(team_2url.split("/")[-1])
+        # Nationals stage, teams have different IDs. For that, a look up
+        # table is passed in to match to original id
+        if lut:
+            team_1id = lut[team_1id] if team_1id is not None else None
+            team_2id = lut[team_2id] if team_2id is not None else None
 
-            # Nationals stage, teams have different IDs. For that, a look up
-            # table is passed in to match to original id
-            if lut:
-                team_1id = lut[team_1id]
-                team_2id = lut[team_2id]
-
-            return team_1id, team_2id
-        return None, None
+        return team_1id, team_2id
 
 
     @staticmethod
@@ -141,7 +138,7 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_doom_matches(round: int) -> List[str]:
+    def scrape_doom_matches(round: int) -> List[List[str]]:
         base_url = "https://compete.tespa.org/tournament/90/phase/2"
         soup = Scraper.get_soup(base_url)
         bracket = soup.find("div", {"class" : "brackets searchables"})
@@ -149,10 +146,12 @@ class TCS_Scraper(Scraper):
 
         matches = []
         for path in paths:
+            doom_path = []
             # for each round in this path
             for x in range(round + 1):
                 match_url = path.find("div", {"class" : "r" + str(x)}).find("a").get("href")
-                matches.append(match_url)
+                doom_path.append(match_url)
+            matches.append(doom_path)
 
         return matches
 
