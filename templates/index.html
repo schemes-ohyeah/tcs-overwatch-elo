@@ -1,14 +1,29 @@
 {% extends "bare_layout.html" %}
 
+{% block head %}
+    <style>
+        .jumbotron {
+            background-image: url("/static/img/hanamura.jpg");
+            background-attachment: fixed;
+            background-position: center;
+        }
+        .jumbo {
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.9);
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
     <div class="jumbotron">
-        <div class="container">
+        <div class="container jumbo">
             <h1 class="display-3">TCS Overwatch Elo Rankings</h1>
             <p class="lead">This website uses data from the <a href="https://compete.tespa.org/tournament/75">Tespa Collegiate Series - Overwatch</a> bracket to assign Elo ratings to every team on the bracket.</p>
             <hr class="my-4">
             <p>Teams start with their average skill rating and will go through the Elo system as they play off in the bracket!</p>
             <p class="lead">
-                <a class="btn btn-primary btn-lg" href="/rankings" role="button">See Rankings</a>
+                <a class="btn btn-primary btn-lg" href="/rankings" role="button">Elo Rankings</a>
+                <a class="btn btn-primary btn-lg" href="/doom" role="button">Towers of Doom</a>
             </p>
         </div>
     </div>
@@ -20,11 +35,11 @@
             <h4>1. Calculating Average SR</h4>
             <p>When scraping team members from Tespa's website, only official players were taken. This excluded team managers / coordinators and substitutes.</p>
             <p>Their Battle Tag was queried to Overbuff to find their skill rating. However, do note that if a person was unranked, they would be excluded from the average calculation. If for some reason, the roster contained more than 6 players on the starting roster, only the top 6 ranked players would be factored into the calculation.</p>
-            <p>Scraping skill rating from Overbuff is a lengthy process as it requires visiting the individual page for each player (over 1400 players). As such, <em>skill ratings will not be updated</em> and will only be used as a Week 0 starting point, since Elo by the end of the competition will be more accurate than subtle SR changes.</p>
+            <p>Scraping skill rating from Overbuff is a lengthy process as it requires visiting the individual page for each player (over 1400 players). As such, <em>skill ratings will not be updated</em> <strong>(EDIT: Due to popular request, skill ratings have been updated for Towers of Doom!)</strong> and will only be used as a Week 0 starting point, since Elo by the end of the competition will be more accurate than subtle SR changes.</p>
 
             <h4>2. Calculating Elo</h4>
             <p>Rather than calculating Elo after every match (bo3 / bo5), it is updated after every map so that matches going 2&ndash;1 will result in a different result than a 2&ndash;0.</p>
-            <p>Elo is calculated using some math found <a href="https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/" target="_blank">here</a> with the &kappa; value being set to 50, meaning for each game, a team could gain or lose no more than 50 Elo</p>
+            <p>Elo is calculated using some math found <a href="https://metinmediamath.wordpress.com/2013/11/27/how-to-calculate-the-elo-rating-including-example/" target="_blank">here</a> with the &kappa; value being set to 50, meaning for each game, a team could gain or lose no more than 50 Elo.</p>
 
             <h4>3. Predicting Future Matches</h4>
             <p>Using a team's most recent elo, predictions of future matches can be calculated using some math found <a href="https://www.reddit.com/r/chess/comments/2y6ezm/how_to_guide_converting_elo_differences_to/" target="_blank">here.</a></p>
