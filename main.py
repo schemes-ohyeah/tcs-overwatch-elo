@@ -5,10 +5,11 @@ from typing import List
 import json, pickle
 
 app = Flask(__name__)
-# GLOBAL_teams = TCS.read_teams_from_json(reset=False)
-# GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
-# GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
-# GLOBAL_future_matches = TCS.read_matches_from_json("future_matches.json")
+GLOBAL_teams = TCS.read_teams_from_json(reset=False)
+GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
+GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
+GLOBAL_future_matches = TCS.read_matches_from_json("future_matches.json")
+GLOBAL_doom_matches = TCS.read_doom_matches_from_json("doom_matches.json")
 
 
 @app.route("/")
@@ -18,13 +19,37 @@ def index():
 
 @app.route("/doom")
 def doom():
-    with open("static/doom_matches.pkl", "rb") as file:
-        doom_matches = pickle.load(file)
+    global GLOBAL_doom_matches, GLOBAL_teams
 
-    for doom_path in doom_matches:
+    doom_matches = []
+    for doom_path in GLOBAL_doom_matches:
+        path = []
         for match in doom_path:
-            print(match.__dict__())
-    return render_template("doom.html", doom_matches=doom_matches)
+            data = {}
+            # Team name, id, elo, win chance
+            data["team_1"] = GLOBAL_teams[match.team_1id].name
+            data["team_2"] = GLOBAL_teams[match.team_2id].name if match.team_2id else None
+
+            data["team_1id"] = match.team_1id
+            data["team_2id"] = match.team_2id if match.team_2id else 0
+
+            data["team_1elo"] = match.team_1elos[0]
+            data["team_2elo"] = match.team_2elos[0]
+
+            # Probably to win based on math from here
+            if not data["team_2"]:
+                data["win_chance"] = None
+            else:
+                data["win_chance"] = Match.calculate_win_chance(
+                    data["team_1elo"], data["team_2elo"]
+                )
+
+            path.append(data)
+        doom_matches.append(path)
+
+
+    return render_template("doom.html",
+                           doom_matches=doom_matches)
 
 
 @app.route("/rankings/<region>")
@@ -109,7 +134,10 @@ def team_page(team_id):
         GLOBAL_swiss_matches, \
         GLOBAL_future_matches
 
-    team = GLOBAL_teams[int(team_id)]
+    try:
+        team = GLOBAL_teams[int(team_id)]
+    except KeyError:
+        return "this team doesn't actually exist please go back to where you came from thank you"
     regional_matches = []
     swiss_matches = []
     for match_id in team.matches:
@@ -232,8 +260,12 @@ def find_future_match_data(team: Team, future_match: Match):
     if future_match.team_1id == team.id:
         data["elo"] = future_match.team_1elos[0]
         data["opponent_elo"] = future_match.team_2elos[0]
-        data["opponent"] = GLOBAL_teams[future_match.team_2id].name
-        data["opponent_id"] = future_match.team_2id
+        if future_match.team_2id:
+            data["opponent"] = GLOBAL_teams[future_match.team_2id].name
+            data["opponent_id"] = future_match.team_2id
+        else:
+            data["opponent"] = "To be determined"
+            data["opponent_id"] = 0
     elif future_match.team_2id == team.id:
         data["elo"] = future_match.team_2elos[0]
         data["opponent_elo"] = future_match.team_1elos[0]

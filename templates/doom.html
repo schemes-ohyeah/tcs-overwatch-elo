@@ -24,7 +24,7 @@
             box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
         }
 
-        .doom .row h1 {
+        .float-right h1 {
             float: right;
         }
 
@@ -54,21 +54,32 @@
                 {% for match in path %}
                     <div>
                         <div>
-                            <h1>0</h1>
-                            <a href="/team/{{ match.team_1id }}">Team 1</a>
-                            <em>{{ match.team_1elos[0] }}</em>
+                            {% if match.win_chance %}
+                                <h1 class="float-right">{{ (100 * match.win_chance)|round|int }}</h1>
+                            {% endif %}
+                            <a href="/team/{{ match.team_1id }}">{{ match.team_1 }}</a>
+                            <em>{{ match.team_1elo|round|int }}</em>
                         </div>
+
+                        <hr>
+
                         <div>
-                            <h1>0</h1>
-                            <a href="/team/{{ match.team_2id }}">Team 2</a>
-                            <em>{{ match.team_2elos[0] }}</em>
+                            {% if match.win_chance %}
+                                <h1 class="float-right">{{ 100 - (100 * match.win_chance)|round|int }}</h1>
+                            {% endif %}
+                            {% if match.team_2 %}
+                                <a href="/team/{{ match.team_2id }}">{{ match.team_2 }}</a>
+                                <em>{{ match.team_2elo|round|int }}</em>
+                            {% else %}
+                                <h1>🔜</h1>
+                            {% endif %}
                         </div>
                     </div>
                 {% endfor %}
             </div>
         {% endfor %}
 
-
+        {#
         <!-- Row 1 -->
         <div class="row">
             <div>
@@ -292,6 +303,6 @@
                 </div>
             </div>
         </div>
-
+    #}
     </div>
 {% endblock %}

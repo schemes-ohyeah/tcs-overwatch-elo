@@ -183,6 +183,14 @@ def predict_matches(match_urls: List[str], teams: Dict[int, Team], lut=None) -> 
 
     return matches
 
+def write_doom_tojson(data, filename: str) -> None:
+    with open("static/json/" + filename, "w") as out:
+        out.write(
+            json.dumps(
+                [[subdatum.__dict__() for subdatum in datum] for datum in data]
+            )
+        )
+
 def write_tojson(data, filename: str) -> None:
     """
     Takes a dict of objects and writes them to a json file
@@ -199,7 +207,7 @@ def write_tojson(data, filename: str) -> None:
         )
 
 
-def read_teams_from_json(reset: bool=False) -> Dict[int, Team]:
+def read_teams_from_json(reset: bool=False, swiss: bool=False) -> Dict[int, Team]:
     """
     Reads the json file and creates a list of Team objects
 
@@ -221,7 +229,7 @@ def read_teams_from_json(reset: bool=False) -> Dict[int, Team]:
                 team["university"],
                 players,
                 team["average_sr"],
-                team["average_sr"],
+                team["elo"] if swiss else team["average_sr"],
                 team["matches"],
                 None
             ))
@@ -282,3 +290,24 @@ def read_matches_from_json(filename: str) -> Dict[int, Match]:
         match_dict[match.id] = match
 
     return match_dict
+
+def read_doom_matches_from_json(filename: str) -> List[List[Match]]:
+    base = "static/json/"
+    with open (base + filename, "r") as file:
+        data = json.load(file)
+    doom_matches = []
+    for path in data:
+        doom_path = []
+        for match in path:
+            doom_path.append(
+                Match(
+                    match["url"],
+                    match["team_1id"],
+                    match["team_2id"],
+                    match["team_1elos"],
+                    match["team_2elos"],
+                    match["results"]
+                )
+            )
+        doom_matches.append(doom_path)
+    return doom_matches

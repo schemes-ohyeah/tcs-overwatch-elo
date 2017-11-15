@@ -8,10 +8,9 @@ def main() -> None:
     # Warning: takes a while
     # scrape_teams_write_tojson()
 
-    teams = TCS.read_teams_from_json(reset=True)
+    teams = TCS.read_teams_from_json(reset=True, swiss=True)
 
-    # Updates regional_matches.json - this should not be touched since
-    # this section of the tourney is over
+    # Updates regional_matches.json
     # update_regionals(teams)
 
     # Looks up team ids from national swiss and matches them to team ids
@@ -79,8 +78,9 @@ def update_future(teams, swiss_ids) -> None:
             doom_path.append(future_matches[url_id])
         doom_matches.append(doom_path)
 
-    with open("static/doom_matches.pkl", "wb") as f:
-        pickle.dump(doom_matches, f, pickle.HIGHEST_PROTOCOL)
+    print(doom_matches)
+
+    TCS.write_doom_tojson(doom_matches, "doom_matches.json")
     TCS.write_tojson(future_matches, "future_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
 
