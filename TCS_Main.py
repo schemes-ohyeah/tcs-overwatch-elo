@@ -31,7 +31,7 @@ def main() -> None:
 
     update_swiss(teams, swiss_ids)
 
-    update_future(teams, swiss_ids)
+    update_doom(teams, swiss_ids, curr_round=4)
 
 def scrape_teams_write_tojson() -> None:
     """
@@ -61,24 +61,31 @@ def update_swiss(teams, swiss_ids) -> None:
     TCS.write_tojson(swiss_matches, "swiss_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
 
-def update_future(teams, swiss_ids) -> None:
-    # Round is 0 indexed
-    doom_matches_urls = TCS_Scraper.scrape_doom_matches(round=3)
+def update_doom(teams, swiss_ids, curr_round: int) -> None:
+    doom_matches_urls = TCS_Scraper.scrape_doom_matches()
 
     match_urls = []
     for url_list in doom_matches_urls:
         match_urls.extend(url_list)
     future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
 
+    # Get completed doom rounds
+    match_urls = []
+    for x in range(curr_round):
+        match_urls.extend(doom_matches_urls[x])
+    doom_matches = TCS.calculate_matches(match_urls, teams, lut=swiss_ids)
+    TCS.write_tojson(doom_matches, "doom_matches.json")
+    TCS.write_tojson(teams, "teams_stage2.json")
+
+    # Get scheduled doom rounds
     doom_matches = []
-    for url_list in doom_matches_urls:
+    # for url_list in doom_matches_urls:
+    for x in range(curr_round, len(doom_matches_urls)):
         doom_path = []
-        for url in url_list:
+        for url in doom_matches_urls[x]:
             url_id = int(url.split("/")[-1])
             doom_path.append(future_matches[url_id])
         doom_matches.append(doom_path)
-
-    print(doom_matches)
 
     TCS.write_doom_tojson(doom_matches, "doom_matches.json")
     TCS.write_tojson(future_matches, "future_matches.json")

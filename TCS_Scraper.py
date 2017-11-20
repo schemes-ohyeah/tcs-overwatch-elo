@@ -138,7 +138,7 @@ class TCS_Scraper(Scraper):
         return team_1id, results, team_2id
 
     @staticmethod
-    def scrape_doom_matches(round: int) -> List[List[str]]:
+    def scrape_doom_matches() -> List[List[str]]:
         base_url = "https://compete.tespa.org/tournament/90/phase/2"
         soup = Scraper.get_soup(base_url)
         bracket = soup.find("div", {"class" : "brackets searchables"})
@@ -148,7 +148,8 @@ class TCS_Scraper(Scraper):
         for path in paths:
             doom_path = []
             # for each round in this path
-            for x in range(round + 1):
+            # There are 4 doom rounds
+            for x in range(4):
                 match_url = path.find("div", {"class" : "r" + str(x)}).find("a").get("href")
                 doom_path.append(match_url)
             matches.append(doom_path)
