@@ -31,7 +31,7 @@ def main() -> None:
 
     update_swiss(teams, swiss_ids)
 
-    update_doom(teams, swiss_ids, curr_round=4)
+    update_doom(teams, swiss_ids, curr_round=3)
 
 def scrape_teams_write_tojson() -> None:
     """
@@ -63,31 +63,43 @@ def update_swiss(teams, swiss_ids) -> None:
 
 def update_doom(teams, swiss_ids, curr_round: int) -> None:
     doom_matches_urls = TCS_Scraper.scrape_doom_matches()
-
-    match_urls = []
-    for url_list in doom_matches_urls:
-        match_urls.extend(url_list)
-    future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
+    print("doom matches urls", doom_matches_urls)
 
     # Get completed doom rounds
     match_urls = []
-    for x in range(curr_round):
-        match_urls.extend(doom_matches_urls[x])
+    for path in doom_matches_urls:
+        for x in range(curr_round):
+            match_urls.append(path[x])
+    print("completed", match_urls)
     doom_matches = TCS.calculate_matches(match_urls, teams, lut=swiss_ids)
     TCS.write_tojson(doom_matches, "doom_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
 
-    # Get scheduled doom rounds
-    doom_matches = []
-    # for url_list in doom_matches_urls:
-    for x in range(curr_round, len(doom_matches_urls)):
-        doom_path = []
-        for url in doom_matches_urls[x]:
-            url_id = int(url.split("/")[-1])
-            doom_path.append(future_matches[url_id])
-        doom_matches.append(doom_path)
+    # Calculate future matches
+    match_urls = []
+    for path in doom_matches_urls:
+        for x in range(curr_round, len(doom_matches_urls)):
+            match_urls.append(path[x])
+    print("future", match_urls)
+    future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
 
-    TCS.write_doom_tojson(doom_matches, "doom_matches.json")
+    # Puts all doom matches together
+    all_doom_matches = doom_matches
+    print(all_doom_matches)
+    for key in future_matches:
+        all_doom_matches[key] = future_matches[key]
+    print(all_doom_matches)
+
+    # Makes doom path list
+    doom_path_matches = []
+    for doom_path in doom_matches_urls:
+        a = []
+        for url in doom_path:
+            id = int(url.split("/")[-1])
+            a.append(all_doom_matches[id])
+        doom_path_matches.append(a)
+
+    TCS.write_doom_tojson(doom_path_matches, "doom_path_matches.json")
     TCS.write_tojson(future_matches, "future_matches.json")
     TCS.write_tojson(teams, "teams_stage2.json")
 

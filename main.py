@@ -9,7 +9,7 @@ GLOBAL_teams = TCS.read_teams_from_json(reset=False)
 GLOBAL_regional_matches = TCS.read_matches_from_json("regional_matches.json")
 GLOBAL_swiss_matches = TCS.read_matches_from_json("swiss_matches.json")
 GLOBAL_future_matches = TCS.read_matches_from_json("future_matches.json")
-GLOBAL_doom_matches = TCS.read_doom_matches_from_json("doom_matches.json")
+GLOBAL_doom_path_matches = TCS.read_doom_matches_from_json("doom_path_matches.json")
 
 
 @app.route("/")
@@ -19,10 +19,10 @@ def index():
 
 @app.route("/doom")
 def doom():
-    global GLOBAL_doom_matches, GLOBAL_teams
+    global GLOBAL_doom_path_matches, GLOBAL_teams
 
     doom_matches = []
-    for doom_path in GLOBAL_doom_matches:
+    for doom_path in GLOBAL_doom_path_matches:
         path = []
         for match in doom_path:
             data = {}
@@ -150,7 +150,7 @@ def team_page(team_id):
 
     my_regional_matches = []
     # Init elo trend as team.average_sr as first item, will add more later
-    elo_trend = [team.average_sr]
+    elo_trend = [1500]
     # Refer to find_match_data doc to see what is returned in data
     for match in regional_matches:
         data = find_match_data(team, match, elo_trend)

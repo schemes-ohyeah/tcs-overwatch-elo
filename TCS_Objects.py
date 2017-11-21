@@ -187,7 +187,7 @@ class Team():
 
         # "Arbitrary" weight factor indicating how much
         # a match should shift elo
-        K = 50
+        K = 150
 
         r_1prime = my_elo + K * (S_1 - E_1)
         r_2prime = opponent_elo + K * (S_2 - E_2)

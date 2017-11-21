@@ -229,8 +229,8 @@ def read_teams_from_json(reset: bool=False, swiss: bool=False) -> Dict[int, Team
                 team["university"],
                 players,
                 team["average_sr"],
-                team["elo"] if swiss else team["average_sr"],
-                team["matches"],
+                team["elo"] if swiss else 1500,#team["average_sr"],
+                None if reset else team["matches"],
                 None
             ))
 
