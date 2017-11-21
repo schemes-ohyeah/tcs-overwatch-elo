@@ -68,7 +68,7 @@ def update_doom(teams, swiss_ids, curr_round: int) -> None:
     # Get completed doom rounds
     match_urls = []
     for path in doom_matches_urls:
-        for x in range(curr_round):
+        for x in range(curr_round - 1):
             match_urls.append(path[x])
     print("completed", match_urls)
     doom_matches = TCS.calculate_matches(match_urls, teams, lut=swiss_ids)
@@ -78,7 +78,7 @@ def update_doom(teams, swiss_ids, curr_round: int) -> None:
     # Calculate future matches
     match_urls = []
     for path in doom_matches_urls:
-        for x in range(curr_round, len(doom_matches_urls)):
+        for x in range(curr_round - 1, 4):
             match_urls.append(path[x])
     print("future", match_urls)
     future_matches = TCS.predict_matches(match_urls, teams, lut=swiss_ids)
