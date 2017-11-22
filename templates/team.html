@@ -50,7 +50,7 @@
         </table>
 
         <!-- Elo Trend -->
-        <h2>Elo Trend</h2>
+        <h2>Elo Trend ({{ team.elo|round|int }})</h2>
         <svg id="elo-trend" width="1000" height="250"></svg>
         <script>
             var elo_trend = {{ elo_trend }};
@@ -98,7 +98,6 @@
                 .attr('stroke-width', 2)
                 .attr('fill', 'none');
         </script>
-
         <script>
             window.onload=function(){
                 var data = [-15, 20, -22, 18, -2, 6, -26, 18],
@@ -162,7 +161,7 @@
         </script>
 
         <!-- Map Summary -->
-        <h1>Map Summary</h1>
+        <h2>Map Summary</h2>
         <table class="table table-sm">
             <thead>
             <tr>
@@ -183,10 +182,60 @@
         </table>
 
         <!-- Future Matches -->
-        <h2>Future Matches</h2>
-        {% for match in future_matches %}
-            <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win (<a href="{{ match.url }}">{{ match.url }}</a>)</p>
-        {% endfor %}
+        {% if future_matches %}
+            <h2>Future Matches</h2>
+            {% for match in future_matches %}
+                <p>Match against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win (<a href="{{ match.url }}">{{ match.url }}</a>)</p>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Doom Matches -->
+        {% if doom_matches %}
+            <h2>Towers of Doom Matches</h2>
+            {% for match in doom_matches %}
+                <h5>Match {{ loop.index }} against <a href="/team/{{ match.opponent_id }}">{{ match.opponent }}</a> ({{ match.opponent_elo|round(2) }} Elo) with {{ (match.win_chance * 100)|round(2)}}% chance to win</h5>
+                <a href="{{ match.url }}">{{ match.url }}</a>
+                <table class="table table-sm">
+                    <thead>
+                    <tr>
+                        <th>Map</th>
+                        <th>Result</th>
+                        <th>New Elo</th>
+                        <th>Elo Change</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for result in match.results %}
+                        <tr>
+                            <td>{{ result[1] }}</td>
+                            {% if result[0] == 1 %}
+                                <td>Win</td>
+                            {% elif result[0] == 0 %}
+                                <td>Draw</td>
+                            {% elif result[0] == -1 %}
+                                <td>Lose</td>
+                            {% else %}
+                                <td>broken code tbh</td>
+                            {% endif %}
+
+                            {% set curr_elo = match.elos[loop.index] %}
+                            {% set prev_elo = match.elos[loop.index0] %}
+                            {% set diff = curr_elo - prev_elo %}
+                            <td>{{ curr_elo|round(2) }}</td>
+                            <td>
+                                {{ diff|round(2) }}
+                                {% if diff > 0 %}
+                                    📈
+                                {% elif diff < 0 %}
+                                    📉
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        {% endif %}
 
         <!-- Swiss matches -->
         {% if swiss_matches %}

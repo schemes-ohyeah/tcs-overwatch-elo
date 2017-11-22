@@ -260,6 +260,10 @@ def read_teams_from_json(reset: bool=False, swiss: bool=False) -> Dict[int, Team
             team["future_matches"]
         )
 
+        regional_matches = team_dict[new_team.id].matches
+        regional_matches.extend(new_team.matches)
+        new_team.matches = regional_matches
+
         teams2.append(new_team)
 
     team_dict = {}

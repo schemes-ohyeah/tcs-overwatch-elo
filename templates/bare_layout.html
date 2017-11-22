@@ -59,30 +59,24 @@
     </div>
 </nav>
 
-{% with messages = get_flashed_messages() %}
-    {% if messages %}
-        <style>
-            .message {
-                z-index: 100;
-                margin-top: 1rem;
-            }
+<style>
+    .message {
+        z-index: 100;
+        margin-top: 1rem;
+    }
 
-            .alert-dismissible .close {
-                top: 0;
-                right: 0;
-                padding: 0;
-            }
-        </style>
-        {% for message in messages %}
-            <div class="container alert alert-info alert-dismissible fade show message" role="alert">
-                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
-{% endwith %}
+    .alert-dismissible .close {
+        top: 0;
+        right: 0;
+        padding: 0;
+    }
+</style>
+<div class="container alert alert-info alert-dismissible fade show message" role="alert">
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+    Wondering why Elo values are so low? Read more about the new calculation system <a href="/#methodology" class="alert-link">here.</a>
+</div>
 
 {% block content %}
 {% endblock %}
